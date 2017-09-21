@@ -1,19 +1,39 @@
 <?xml version="1.0" encoding="utf-8"?>
-<android.support.constraint.ConstraintLayout
-	xmlns:android="http://schemas.android.com/apk/res/android"
-	xmlns:tools="http://schemas.android.com/tools"
-	xmlns:app="http://schemas.android.com/apk/res-auto"
-	android:layout_width="match_parent"
-	android:layout_height="match_parent"
-	tools:context="com.zxk.appdial.MainActivity">
-
-	<TextView
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android" xmlns:tools="http://schemas.android.com/tools" xmlns:app="http://schemas.android.com/apk/res-auto"
+	android:id="@+id/rlRoot"
+	android:layout_width="fill_parent"
+	android:layout_height="fill_parent"
+	android:theme="@style/Transparent">
+	<RelativeLayout
+		android:id="@+id/rlListView"
 		android:layout_width="wrap_content"
 		android:layout_height="wrap_content"
-		android:text="Hello World!"
-		app:layout_constraintBottom_toBottomOf="parent"
-		app:layout_constraintLeft_toLeftOf="parent"
-		app:layout_constraintRight_toRightOf="parent"
-		app:layout_constraintTop_toTopOf="parent" />
+		android:layout_above="@+id/rlStatus">
+		<ListView android:layout_width="match_parent" android:layout_height="match_parent">
 
-</android.support.constraint.ConstraintLayout>
+		</ListView>
+	</RelativeLayout>
+	<RelativeLayout
+		android:id="@+id/rlStatus"
+		android:layout_width="fill_parent"
+		android:layout_height="200dp"
+		android:layout_alignParentBottom="true">
+		<TableLayout android:layout_width="match_parent" android:layout_height="match_parent">
+			<TableRow>
+				<Button android:text="@string/button_1" android:layout_weight="1" android:background="#00000000" />
+				<Button android:text="@string/button_1" android:layout_weight="1" android:background="#00000000" />
+				<Button android:text="@string/button_1" android:layout_weight="1" android:background="#00000000" />
+			</TableRow>
+			<TableRow>
+				<Button android:text="@string/button_1" />
+				<Button android:text="@string/button_1" />
+				<Button android:text="@string/button_1" />
+			</TableRow>
+			<TableRow>
+				<Button android:text="@string/button_1" />
+				<Button android:text="@string/button_1" />
+				<Button android:text="@string/button_1" />
+			</TableRow>
+		</TableLayout>
+	</RelativeLayout>
+</RelativeLayout>

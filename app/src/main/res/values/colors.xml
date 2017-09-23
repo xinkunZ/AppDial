@@ -6,4 +6,10 @@
 	<color name="baseTransparent">#00000000</color>
 	<color name="otherTransparent">#88000000</color>
 	<color name="grey">#aea1a1</color>
+
+
+	<drawable name="select">#e84848</drawable>
+	<drawable name="unselect">#88000000</drawable>
+	<drawable name="baseTransparent">#00000000</drawable>
+
 </resources>

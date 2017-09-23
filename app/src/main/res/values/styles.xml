@@ -1,8 +1,27 @@
 <resources>
-	<style name="Transparent" parent="@android:style/Theme.Translucent.NoTitleBar">
-		<item name="android:windowBackground">@color/transparent</item>
+
+	<style name="Transparent" parent="@android:style/Theme.Material.NoActionBar.TranslucentDecor">
+		<item name="android:windowBackground">@color/baseTransparent</item>
 		<item name="android:windowIsTranslucent">true</item>
 		<item name="android:backgroundDimEnabled">true</item>
 		<item name="android:windowAnimationStyle">@android:style/Animation.Translucent</item>
 	</style>
+
+
+	<style name="ButtonStyle" parent="@android:style/Widget.Material.Button.Borderless">
+		<item name="android:layout_weight">1</item>
+		<item name="android:layout_height">wrap_content</item>
+		<item name="android:layout_width">wrap_content</item>
+		<item name="android:textColor">#FFFFFFFF</item>
+		<item name="android:background">@color/baseTransparent</item>
+		<item name="android:textSize">18sp</item>
+		<item name="android:onClick">click</item>
+	</style>
+
+
+	<style name="ButtonTheme" parent="Theme.AppCompat.Light.DarkActionBar">
+		<item name="colorButtonNormal">#FF4081</item><!--正常状态下的颜色  -->
+		<item name="colorControlHighlight">#22000000</item><!--覆盖色，按下的颜色  -->
+	</style>
+
 </resources>

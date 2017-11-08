@@ -3,12 +3,11 @@ package com.zxk.appdial;
 import java.util.ArrayList;
 import java.util.List;
 
+import android.app.Activity;
 import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
-import android.support.v7.app.AppCompatActivity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -20,18 +19,13 @@ import android.widget.TextView;
 import com.zxk.appdial.model.LocalApps;
 import com.zxk.appdial.utils.AppTools;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends Activity {
+
   private View root;
   private ListView apppsListView;
   private View dial;
 
   private ListViewAdapter listViewAdapter;
-
-  private int lastItem = -1;
-  private int state;
-
-  private ViewGroup.LayoutParams defaultAppListParam;
-  private ViewGroup.LayoutParams defaultDialParam;
 
   @Override
   protected void onCreate(Bundle savedInstanceState) {
@@ -40,9 +34,6 @@ public class MainActivity extends AppCompatActivity {
     apppsListView = (ListView) findViewById(R.id.appList);
     dial = findViewById(R.id.dial);
     root = findViewById(R.id.rlRoot);
-
-    defaultAppListParam = apppsListView.getLayoutParams();
-    defaultDialParam = dial.getLayoutParams();
 
     listViewAdapter = new ListViewAdapter();
     apppsListView.setAdapter(listViewAdapter);
@@ -57,27 +48,6 @@ public class MainActivity extends AppCompatActivity {
       }
 
     });
-    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-      apppsListView.setOnScrollListener(new ScrollHelper() {
-
-        @Override
-        void onScrollUp() {
-          dial.setVisibility(View.GONE);
-          ViewGroup.LayoutParams layoutParams = defaultDialParam;
-          layoutParams.height = 0;
-          dial.setLayoutParams(layoutParams);
-        }
-
-        @Override
-        void onScrollDown() {
-          dial.setVisibility(View.VISIBLE);
-          apppsListView.setLayoutParams(defaultAppListParam);
-        }
-      });
-    } else {
-      //todo
-    }
-
     initAppList();
   }
 

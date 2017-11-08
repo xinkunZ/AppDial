@@ -1,12 +1,12 @@
 package com.zxk.appdial;
 
-import android.support.annotation.NonNull;
 import android.view.View;
 import android.widget.AbsListView;
 
 /**
  * @author zhangxinkun
  */
+@Deprecated
 public abstract class ScrollHelper implements AbsListView.OnScrollListener {
 
   private int mLastScrollY; //第一个可视的item的顶部坐标
@@ -66,7 +66,7 @@ public abstract class ScrollHelper implements AbsListView.OnScrollListener {
     this.mScrollThreshold = scrollThreshold;
   }
 
-  public void setListView(@NonNull AbsListView listView) {
+  public void setListView(AbsListView listView) {
     this.mListView = listView;
   }
 

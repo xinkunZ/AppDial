@@ -8,6 +8,7 @@
 	android:orientation="vertical">
 
 	<ListView
+		android:animateLayoutChanges="true"
 		android:id="@+id/appList"
 		android:layout_width="match_parent"
 		android:layout_weight="2"
@@ -16,6 +17,7 @@
 	</ListView>
 
 	<LinearLayout
+		android:id="@+id/dial"
 		android:layout_width="match_parent"
 		android:layout_weight="1"
 		android:columnCount="3"
@@ -38,11 +40,11 @@
 				android:layout_width="0dp"
 				android:layout_weight="1"
 				android:layout_marginBottom="-8dp"
-				android:background="@drawable/shape"
+				android:background="@drawable/selector"
 				android:text="1" />
 			<Button
 				android:theme="@style/ButtonStyle"
-				android:background="@drawable/shape"
+				android:background="@drawable/selector"
 				android:layout_height="match_parent"
 				android:layout_width="0dp"
 				android:layout_marginBottom="-8dp"
@@ -52,7 +54,7 @@
 				android:layout_marginRight="-8dp"
 				android:layout_marginEnd="-8dp"
 				android:theme="@style/ButtonStyle"
-				android:background="@drawable/shape"
+				android:background="@drawable/selector"
 				android:layout_height="match_parent"
 				android:layout_width="0dp"
 				android:layout_marginBottom="-8dp"
@@ -71,11 +73,11 @@
 				android:layout_height="match_parent"
 				android:layout_width="0dp"
 				android:layout_weight="1"
-				android:background="@drawable/shape"
+				android:background="@drawable/selector"
 				android:text="4" />
 			<Button
 				android:theme="@style/ButtonStyle"
-				android:background="@drawable/shape"
+				android:background="@drawable/selector"
 				android:layout_height="match_parent"
 				android:layout_width="0dp"
 				android:layout_weight="1"
@@ -84,7 +86,7 @@
 				android:layout_marginRight="-8dp"
 				android:layout_marginEnd="-8dp"
 				android:theme="@style/ButtonStyle"
-				android:background="@drawable/shape"
+				android:background="@drawable/selector"
 				android:layout_height="match_parent"
 				android:layout_width="0dp"
 				android:layout_weight="1"
@@ -102,11 +104,11 @@
 				android:layout_height="match_parent"
 				android:layout_width="0dp"
 				android:layout_weight="1"
-				android:background="@drawable/shape"
+				android:background="@drawable/selector"
 				android:text="7" />
 			<Button
 				android:theme="@style/ButtonStyle"
-				android:background="@drawable/shape"
+				android:background="@drawable/selector"
 				android:layout_height="match_parent"
 				android:layout_width="0dp"
 				android:layout_weight="1"
@@ -115,7 +117,7 @@
 				android:layout_marginRight="-8dp"
 				android:layout_marginEnd="-8dp"
 				android:theme="@style/ButtonStyle"
-				android:background="@drawable/shape"
+				android:background="@drawable/selector"
 				android:layout_height="match_parent"
 				android:layout_width="0dp"
 				android:layout_weight="1"
@@ -133,11 +135,12 @@
 				android:layout_height="match_parent"
 				android:layout_width="0dp"
 				android:layout_weight="1"
-				android:background="@drawable/shape"
+				android:background="@drawable/selector"
+				android:onClick="miniDial"
 				android:text="v" />
 			<Button
 				android:theme="@style/ButtonStyle"
-				android:background="@drawable/shape"
+				android:background="@drawable/selector"
 				android:layout_height="match_parent"
 				android:layout_width="0dp"
 				android:layout_weight="1"
@@ -146,7 +149,7 @@
 				android:layout_marginRight="-8dp"
 				android:layout_marginEnd="-8dp"
 				android:theme="@style/ButtonStyle"
-				android:background="@drawable/shape"
+				android:background="@drawable/selector"
 				android:layout_height="match_parent"
 				android:layout_width="0dp"
 				android:layout_weight="1"

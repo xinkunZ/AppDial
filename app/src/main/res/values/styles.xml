@@ -11,7 +11,7 @@
 	<style name="ButtonStyle" parent="Theme.AppCompat.Light">
 		<item name="android:backgroundDimEnabled">true</item>
 		<item name="android:textColor">#FFFFFFFF</item>
-		<item name="android:textSize">18sp</item>
+		<item name="android:textSize">20sp</item>
 		<item name="colorButtonNormal">#39000000</item><!--正常状态下的颜色  -->
 		<item name="colorControlHighlight">#88ffffff</item><!--覆盖色，按下的颜色  -->
 	</style>

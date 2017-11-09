@@ -22,7 +22,7 @@
 		<activity
 			android:name=".ListItem"
 			android:label="@string/title_activity_list_item"
-			android:theme="@style/Transparent"></activity>
+			android:theme="@style/TransparentListItem" />
 	</application>
 
 </manifest>

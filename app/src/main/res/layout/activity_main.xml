@@ -7,7 +7,13 @@
 	android:theme="@style/Transparent"
 	android:orientation="vertical">
 
-	<TextView android:layout_width="match_parent" android:layout_height="50dp" android:gravity="center_vertical|start" android:textSize="20sp" android:id="@+id/numberTextView" android:text="随便输入点啥吧！" />
+	<TextView android:layout_width="match_parent"
+		android:layout_height="50dp"
+		android:layout_marginStart="10dp"
+		android:gravity="center_vertical|start"
+		android:textSize="40sp"
+		android:id="@+id/numberTextView"
+		android:text="" />
 
 	<ListView
 		android:animateLayoutChanges="true"

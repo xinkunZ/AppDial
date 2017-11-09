@@ -1,21 +1,38 @@
 <resources>
 
-	<style name="Transparent" parent="android:Theme.Material.NoActionBar">
+	<style name="InOutAnimation"
+		parent="android:Animation.Activity">
+		<item name="android:activityOpenEnterAnimation">@anim/push_bottom_in</item>
+		<item name="android:activityCloseExitAnimation">@anim/push_bottom_out</item>
+
+	</style>
+
+	<style name="Transparent"
+		parent="android:Theme.Material.NoActionBar">
 		<item name="android:windowBackground">@android:color/transparent</item>
 		<item name="android:windowIsTranslucent">true</item>
 		<item name="android:backgroundDimEnabled">true</item>
-		<item name="android:windowAnimationStyle">@android:style/Animation.Translucent</item>
+		<item name="android:windowAnimationStyle">@style/InOutAnimation</item>
+	</style>
+
+	<style name="TransparentListItem"
+		parent="android:Theme.Material.NoActionBar">
+		<item name="android:windowBackground">@android:color/transparent</item>
+		<item name="android:windowIsTranslucent">true</item>
+		<item name="android:backgroundDimEnabled">true</item>
 	</style>
 
 
-	<style name="ButtonStyle" parent="android:Theme.Material.Light">
+	<style name="ButtonStyle"
+		parent="android:Theme.Material.Light">
 		<item name="android:backgroundDimEnabled">true</item>
 		<item name="android:textColor">#FFFFFFFF</item>
 		<item name="android:textSize">20sp</item>
 		<item name="android:onClick">clickButton</item>
 	</style>
 
-	<style name="DialLineStyle" parent="android:Theme.Material.Light">
+	<style name="DialLineStyle"
+		parent="android:Theme.Material.Light">
 		<item name="android:layout_width">match_parent</item>
 		<item name="android:layout_margin">0dp</item>
 		<item name="android:layout_height">60dp</item>

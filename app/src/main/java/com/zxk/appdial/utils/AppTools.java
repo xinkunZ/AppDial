@@ -1,7 +1,9 @@
 package com.zxk.appdial.utils;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageInfo;
@@ -34,7 +36,8 @@ public class AppTools {
       for (int i = 0; i < packageInfos.size(); i++) {
         PackageInfo packageInfo = packageInfos.get(i);
         //过滤掉系统app
-        if ((ApplicationInfo.FLAG_SYSTEM & packageInfo.applicationInfo.flags) != 0) {
+        if ((ApplicationInfo.FLAG_SYSTEM & packageInfo.applicationInfo.flags) > 0
+            || packageInfo.applicationInfo.className == null) {
           continue;
         }
         LocalApps myAppInfo = new LocalApps();

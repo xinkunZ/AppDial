@@ -119,14 +119,14 @@ public class MainActivity extends Activity {
       return view;
     }
 
-    class ViewHolder {
-      ImageView iv_app_icon;
-      TextView tx_app_name;
-    }
-
     public void setData(List<LocalApps> data) {
       this.data = data;
       notifyDataSetChanged();
     }
+  }
+
+  static class ViewHolder {
+    ImageView iv_app_icon;
+    TextView tx_app_name;
   }
 }

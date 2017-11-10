@@ -116,9 +116,10 @@
     </content>
     <orderEntry type="jdk" jdkName="Android API 23 Platform" jdkType="Android SDK" />
     <orderEntry type="sourceFolder" forTests="false" />
-    <orderEntry type="library" name="__local_aars__:C.\WorkSpace\AppDial\app\libs\t9search.jar:unspecified@jar" level="project" />
+    <orderEntry type="library" name="__local_aars__:C.\workspace\AppDial\app\libs\t9search.jar:unspecified@jar" level="project" />
     <orderEntry type="library" scope="TEST" name="org.hamcrest:hamcrest-core:1.3@jar" level="project" />
-    <orderEntry type="library" name="__local_aars__:C.\WorkSpace\AppDial\app\libs\pinyin4j-2.5.0.jar:unspecified@jar" level="project" />
     <orderEntry type="library" scope="TEST" name="junit:junit:4.12@jar" level="project" />
+    <orderEntry type="library" name="__local_aars__:C.\workspace\AppDial\app\libs\pinyin4j-2.5.0.jar:unspecified@jar" level="project" />
+    <orderEntry type="library" name="android-android-23" level="project" />
   </component>
 </module>

@@ -2,9 +2,8 @@ package com.zxk.appdial;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
+import java.util.concurrent.CountDownLatch;
 
 import android.app.Activity;
 import android.content.Intent;
@@ -62,7 +61,7 @@ public class MainActivity extends Activity {
 
   private static List<LocalApps> lastApps = new ArrayList<>();
 
-  private static List<LocalApps> filter = Collections.synchronizedList(new ArrayList<LocalApps>());
+  private volatile static List<LocalApps> filter = Collections.synchronizedList(new ArrayList<LocalApps>());
 
   private void initAppList() {
     new Thread() {
@@ -131,6 +130,27 @@ public class MainActivity extends Activity {
           @Override
           public void run() {
             t9Filter(finalDelete);
+            new Thread(new Runnable() {
+              @Override
+              public void run() {
+                if (countDownLatch != null) {
+                  try {
+                    countDownLatch.await();
+                  } catch (InterruptedException e) {
+                    e.printStackTrace();
+                  }
+                }
+                mHandler.post(new Runnable() {
+                  @Override
+                  public void run() {
+                    listViewAdapter.setData(filter);
+                    lastApps = new ArrayList<LocalApps>();
+                    lastApps.addAll(filter);
+                  }
+                });
+
+              }
+            }).start();
             numberTextView.setText(string.toString());
           }
         });
@@ -138,11 +158,15 @@ public class MainActivity extends Activity {
     }
   }
 
+  private CountDownLatch countDownLatch = null;
+
+  private final int threadSize = 20;
+
   private void t9Filter(boolean delete) {
     filter.clear();
     if (string.toString().isEmpty()) {
-      lastApps = new ArrayList<>();
-      lastApps.addAll(appInfos);
+      filter = new ArrayList<>();
+      filter.addAll(appInfos);
       listViewAdapter.setData(appInfos);
     } else {
       if (delete) {
@@ -152,13 +176,23 @@ public class MainActivity extends Activity {
       }
       int size = lastApps.size();
       if (size > 50) {
-        int count = size / 10;
+
+        int count = size / threadSize;
+        boolean haveTail = false;
+        if (count * threadSize != size) {
+          haveTail = true;
+        }
+        countDownLatch = new CountDownLatch(count + (haveTail ? 1 : 0));
         for (int i = 0; i < count; i++) {
-          List<LocalApps> list1 = lastApps.subList(i * count, i * count + 10);
+          System.out.println(String.format("从%s ~ %s ", i * threadSize, i * threadSize + threadSize));
+          List<LocalApps> list1 = lastApps.subList(i * threadSize, i * threadSize + threadSize);
           new Worker(list1).start();
         }
-        List<LocalApps> latest = lastApps.subList(count * 10 - 1, size - 1);
-        new Worker(latest).start();
+        if (haveTail) {
+          System.out.println(String.format("尾巴 %s ~ %s ",count * threadSize - 1, size - 1));
+          List<LocalApps> latest = lastApps.subList(count * threadSize - 1, size - 1);
+          new Worker(latest).start();
+        }
       } else {
         new Worker(lastApps).start();
       }
@@ -184,17 +218,16 @@ public class MainActivity extends Activity {
           newList.add(localApps);
         }
       }
-      filter.addAll(newList);
-      mHandler.post(new Runnable() {
-        @Override
-        public void run() {
-          Set<LocalApps> set = new HashSet<>();
-          set.addAll(filter);
-          ArrayList<LocalApps> data = new ArrayList<>(set);
-          listViewAdapter.setData(data);
-          lastApps = data;
-        }
-      });
+      syncAdd(newList);
+      countDownLatch.countDown();
+    }
+  }
+
+  private synchronized void syncAdd(List<LocalApps> newList) {
+    for (LocalApps localApps : newList) {
+      if (!filter.contains(localApps)) {
+        filter.add(localApps);
+      }
     }
   }
 

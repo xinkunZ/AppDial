@@ -17,6 +17,27 @@ public class LocalApps implements Serializable {
   private String simpleChn;
   private String pinyin;
 
+  @Override
+  public boolean equals(Object o) {
+    if (this == o)
+      return true;
+    if (o == null || getClass() != o.getClass())
+      return false;
+
+    LocalApps localApps = (LocalApps) o;
+
+    if (appName != null ? !appName.equals(localApps.appName) : localApps.appName != null)
+      return false;
+    return packageName != null ? packageName.equals(localApps.packageName) : localApps.packageName == null;
+  }
+
+  @Override
+  public int hashCode() {
+    int result = appName != null ? appName.hashCode() : 0;
+    result = 31 * result + (packageName != null ? packageName.hashCode() : 0);
+    return result;
+  }
+
   public String getClassName() {
     return className;
   }

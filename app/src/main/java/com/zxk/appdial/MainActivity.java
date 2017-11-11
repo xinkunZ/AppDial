@@ -10,6 +10,7 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.os.Handler;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -189,11 +190,12 @@ public class MainActivity extends Activity {
           new Worker(list1).start();
         }
         if (haveTail) {
-          System.out.println(String.format("尾巴 %s ~ %s ",count * threadSize - 1, size - 1));
+          System.out.println(String.format("尾巴 %s ~ %s ", count * threadSize - 1, size - 1));
           List<LocalApps> latest = lastApps.subList(count * threadSize - 1, size - 1);
           new Worker(latest).start();
         }
       } else {
+        countDownLatch = new CountDownLatch(1);
         new Worker(lastApps).start();
       }
     }

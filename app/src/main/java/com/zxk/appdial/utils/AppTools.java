@@ -7,6 +7,7 @@ import android.content.Intent;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import static android.content.pm.PackageManager.GET_ACTIVITIES;
+import android.util.Log;
 import com.zxk.appdial.model.LocalApps;
 
 /**
@@ -31,7 +32,9 @@ public class AppTools {
     }
     apps = new ArrayList<>();
     try {
-      List<PackageInfo> packageInfos = packageManager.getInstalledPackages(GET_ACTIVITIES);
+      List<PackageInfo> packageInfos = packageManager.getInstalledPackages(0);
+
+
       for (int i = 0; i < packageInfos.size(); i++) {
         PackageInfo packageInfo = packageInfos.get(i);
         //过滤掉系统app
@@ -46,7 +49,10 @@ public class AppTools {
         }
         LocalApps myAppInfo = new LocalApps();
         myAppInfo.setPackageName(packageInfo.packageName);
+        long start = System.currentTimeMillis();
         myAppInfo.setAppName(packageInfo.applicationInfo.loadLabel(packageManager).toString());
+        long end = System.currentTimeMillis();
+        Log.d(AppTools.class.getName(), "耗时 - " + (end - start));
         myAppInfo.setClassName(packageInfo.applicationInfo.className);
 
         if (packageInfo.applicationInfo.loadIcon(packageManager) == null) {
@@ -58,6 +64,7 @@ public class AppTools {
     } catch (RuntimeException e) {
       e.printStackTrace();
     }
+
     return apps;
   }
 }

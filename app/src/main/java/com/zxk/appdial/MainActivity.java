@@ -127,35 +127,43 @@ public class MainActivity extends Activity {
           string.append(text);
         }
         final boolean finalDelete = delete;
-        mHandler.post(new Runnable() {
-          @Override
-          public void run() {
-            t9Filter(finalDelete);
-            new Thread(new Runnable() {
-              @Override
-              public void run() {
-                if (countDownLatch != null) {
-                  try {
-                    countDownLatch.await();
-                  } catch (InterruptedException e) {
-                    e.printStackTrace();
-                  }
-                }
-                mHandler.post(new Runnable() {
-                  @Override
-                  public void run() {
-                    listViewAdapter.setData(filter);
-                    lastApps = new ArrayList<LocalApps>();
-                    lastApps.addAll(filter);
-                  }
-                });
-
-              }
-            }).start();
-            numberTextView.setText(string.toString());
-          }
-        });
+        searchAndLoadToUI(finalDelete);
       }
+    }
+  }
+
+  private void searchAndLoadToUI(final boolean isDelete) {
+    mHandler.post(new Runnable() {
+
+      @Override
+      public void run() {
+        numberTextView.setText(string.toString());
+        t9Filter(isDelete);
+        new LoadDataToUI().start();
+      }
+    });
+  }
+
+  private class LoadDataToUI extends Thread {
+
+    @Override
+    public void run() {
+      if (countDownLatch != null) {
+        try {
+          //等待所有的搜索线程跑完
+          countDownLatch.await();
+        } catch (InterruptedException e) {
+          e.printStackTrace();
+        }
+      }
+      mHandler.post(new Runnable() {
+        @Override
+        public void run() {
+          listViewAdapter.setData(filter);
+          lastApps = new ArrayList<>();
+          lastApps.addAll(filter);
+        }
+      });
     }
   }
 
@@ -171,10 +179,11 @@ public class MainActivity extends Activity {
       listViewAdapter.setData(appInfos);
     } else {
       if (delete) {
-        //退格 则重查
+        //退格 重查 后续考虑加入上上笔搜索结果直接获取
         lastApps = new ArrayList<>();
         lastApps.addAll(appInfos);
       }
+
       int size = lastApps.size();
       if (size > 50) {
 
@@ -186,8 +195,8 @@ public class MainActivity extends Activity {
         countDownLatch = new CountDownLatch(count + (haveTail ? 1 : 0));
         for (int i = 0; i < count; i++) {
           System.out.println(String.format("从%s ~ %s ", i * threadSize, i * threadSize + threadSize));
-          List<LocalApps> list1 = lastApps.subList(i * threadSize, i * threadSize + threadSize);
-          new Worker(list1).start();
+          List<LocalApps> l = lastApps.subList(i * threadSize, i * threadSize + threadSize);
+          new Worker(l).start();
         }
         if (haveTail) {
           System.out.println(String.format("尾巴 %s ~ %s ", count * threadSize - 1, size - 1));

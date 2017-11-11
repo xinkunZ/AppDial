@@ -1,5 +1,12 @@
 <resources>
 
+	<declare-styleable name="buttonText">
+		<attr name="t9Chars"
+			format="string" />
+		<attr name="num"
+			format="string" />
+	</declare-styleable>
+
 	<style name="InOutAnimation"
 		parent="android:Animation.Activity">
 		<item name="android:activityOpenEnterAnimation">@anim/push_bottom_in</item>

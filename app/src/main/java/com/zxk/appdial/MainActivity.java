@@ -23,6 +23,7 @@ import android.widget.TextView;
 import com.t9search.model.PinyinSearchUnit;
 import com.t9search.util.PinyinUtil;
 import com.t9search.util.T9Util;
+import com.zxk.appdial.cmp.MyButton;
 import com.zxk.appdial.model.LocalApps;
 import com.zxk.appdial.utils.AppTools;
 

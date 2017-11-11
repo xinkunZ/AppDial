@@ -32,6 +32,7 @@ public class MainActivity extends Activity {
   private ListViewAdapter listViewAdapter;
 
   private TextView numberTextView;
+  private AppTools appTools;
 
   @Override
   protected void onCreate(Bundle savedInstanceState) {
@@ -39,7 +40,7 @@ public class MainActivity extends Activity {
     setContentView(R.layout.activity_main);
     apppsListView = (ListView) findViewById(R.id.appList);
     numberTextView = (TextView) findViewById(R.id.numberTextView);
-
+    appTools = new AppTools(getPackageManager());
     listViewAdapter = new ListViewAdapter();
     apppsListView.setAdapter(listViewAdapter);
     apppsListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
@@ -65,13 +66,12 @@ public class MainActivity extends Activity {
   private volatile static List<LocalApps> filter = Collections.synchronizedList(new ArrayList<LocalApps>());
 
   private void initAppList() {
-    new Thread() {
+    mHandler.post(new Runnable() {
       @Override
       public void run() {
-        super.run();
         //扫描得到APP列表
         if (appInfos == null) {
-          appInfos = AppTools.scanLocalInstallAppList(MainActivity.this.getPackageManager());
+          appInfos = appTools.scanLocalInstallAppList();
         }
         mHandler.post(new Runnable() {
           @Override
@@ -81,7 +81,7 @@ public class MainActivity extends Activity {
           }
         });
       }
-    }.start();
+    });
   }
 
   public void miniDial(View view) {
@@ -139,32 +139,21 @@ public class MainActivity extends Activity {
       public void run() {
         numberTextView.setText(string.toString());
         t9Filter(isDelete);
-        new LoadDataToUI().start();
+
+        if (countDownLatch != null) {
+          try {
+            //等待所有的搜索线程跑完
+            countDownLatch.await();
+          } catch (InterruptedException e) {
+            e.printStackTrace();
+          }
+        }
+        Log.d("搜索", "结果 - " + filter);
+        listViewAdapter.setData(filter);
+        lastApps = new ArrayList<>();
+        lastApps.addAll(filter);
       }
     });
-  }
-
-  private class LoadDataToUI extends Thread {
-
-    @Override
-    public void run() {
-      if (countDownLatch != null) {
-        try {
-          //等待所有的搜索线程跑完
-          countDownLatch.await();
-        } catch (InterruptedException e) {
-          e.printStackTrace();
-        }
-      }
-      mHandler.post(new Runnable() {
-        @Override
-        public void run() {
-          listViewAdapter.setData(filter);
-          lastApps = new ArrayList<>();
-          lastApps.addAll(filter);
-        }
-      });
-    }
   }
 
   private CountDownLatch countDownLatch = null;
@@ -174,16 +163,16 @@ public class MainActivity extends Activity {
   private void t9Filter(boolean delete) {
     filter.clear();
     if (string.toString().isEmpty()) {
+      //为空则展示全部
       filter = new ArrayList<>();
       filter.addAll(appInfos);
-      listViewAdapter.setData(appInfos);
     } else {
       if (delete) {
         //退格 重查 后续考虑加入上上笔搜索结果直接获取
         lastApps = new ArrayList<>();
         lastApps.addAll(appInfos);
       }
-
+      Log.d("搜索 - ", String.format("从%s中 T9搜索 %s", lastApps, string));
       int size = lastApps.size();
       if (size > 50) {
 
@@ -194,12 +183,10 @@ public class MainActivity extends Activity {
         }
         countDownLatch = new CountDownLatch(count + (haveTail ? 1 : 0));
         for (int i = 0; i < count; i++) {
-          System.out.println(String.format("从%s ~ %s ", i * threadSize, i * threadSize + threadSize));
           List<LocalApps> l = lastApps.subList(i * threadSize, i * threadSize + threadSize);
           new Worker(l).start();
         }
         if (haveTail) {
-          System.out.println(String.format("尾巴 %s ~ %s ", count * threadSize - 1, size - 1));
           List<LocalApps> latest = lastApps.subList(count * threadSize - 1, size - 1);
           new Worker(latest).start();
         }

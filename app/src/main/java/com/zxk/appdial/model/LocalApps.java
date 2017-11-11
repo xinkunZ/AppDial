@@ -18,6 +18,11 @@ public class LocalApps implements Serializable {
   private String pinyin;
 
   @Override
+  public String toString() {
+    return appName;
+  }
+
+  @Override
   public boolean equals(Object o) {
     if (this == o)
       return true;

@@ -2,11 +2,11 @@ package com.zxk.appdial.utils;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CountDownLatch;
 
 import android.content.Intent;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
-import static android.content.pm.PackageManager.GET_ACTIVITIES;
 import android.util.Log;
 import com.zxk.appdial.model.LocalApps;
 
@@ -15,18 +15,18 @@ import com.zxk.appdial.model.LocalApps;
  */
 public class AppTools {
 
-  private static AppTools instance = null;
+  private volatile List<LocalApps> apps = null;
 
-  public static AppTools getTools() {
-    if (instance == null) {
-      instance = new AppTools();
-    }
-    return instance;
+  private int threadSize = 20;
+  private CountDownLatch countDownLatch;
+
+  private PackageManager packageManager;
+
+  public AppTools(PackageManager packageManager) {
+    this.packageManager = packageManager;
   }
 
-  private static List<LocalApps> apps = null;
-
-  public static List<LocalApps> scanLocalInstallAppList(PackageManager packageManager) {
+  public List<LocalApps> scanLocalInstallAppList() {
     if (apps != null) {
       return apps;
     }
@@ -34,25 +34,60 @@ public class AppTools {
     try {
       List<PackageInfo> packageInfos = packageManager.getInstalledPackages(0);
 
+      int size = packageInfos.size();
+      if (size > 50) {
+        int count = size / threadSize;
+        boolean haveTail = false;
+        if (count * threadSize != size) {
+          haveTail = true;
+        }
+        countDownLatch = new CountDownLatch(count + (haveTail ? 1 : 0));
+        for (int i = 0; i < count; i++) {
+          List<PackageInfo> l = packageInfos.subList(i * threadSize, i * threadSize + threadSize);
+          new FilterWorker(l).start();
+        }
+        if (haveTail) {
+          List<PackageInfo> latest = packageInfos.subList(count * threadSize, size);
+          new FilterWorker(latest).start();
+        }
+      } else {
+        countDownLatch = new CountDownLatch(1);
+        new FilterWorker(packageInfos).start();
+      }
+    } catch (RuntimeException e) {
+      e.printStackTrace();
+    }
 
-      for (int i = 0; i < packageInfos.size(); i++) {
-        PackageInfo packageInfo = packageInfos.get(i);
-        //过滤掉系统app
-        //        if ((ApplicationInfo.FLAG_SYSTEM & packageInfo.applicationInfo.flags) > 0
-        //            || packageInfo.applicationInfo.className == null) {
-        //          continue;
-        //        }
+    try {
+      countDownLatch.await();
+    } catch (InterruptedException e) {
+      e.printStackTrace();
+    }
+
+    return apps;
+  }
+
+  private class FilterWorker extends Thread {
+
+    private List<PackageInfo> list;
+
+    public FilterWorker(List<PackageInfo> l) {
+      this.list = l;
+    }
+
+    @Override
+    public void run() {
+      super.run();
+      for (int i = 0; i < list.size(); i++) {
+        PackageInfo packageInfo = list.get(i);
+        //过滤不能打开的app
         Intent intent = packageManager.getLaunchIntentForPackage(packageInfo.packageName);
         if (intent == null) {
           continue;
-
         }
         LocalApps myAppInfo = new LocalApps();
         myAppInfo.setPackageName(packageInfo.packageName);
-        long start = System.currentTimeMillis();
         myAppInfo.setAppName(packageInfo.applicationInfo.loadLabel(packageManager).toString());
-        long end = System.currentTimeMillis();
-        Log.d(AppTools.class.getName(), "耗时 - " + (end - start));
         myAppInfo.setClassName(packageInfo.applicationInfo.className);
 
         if (packageInfo.applicationInfo.loadIcon(packageManager) == null) {
@@ -60,11 +95,11 @@ public class AppTools {
         }
         myAppInfo.setIcon(packageInfo.applicationInfo.loadIcon(packageManager));
         apps.add(myAppInfo);
+        countDownLatch.countDown();
       }
-    } catch (RuntimeException e) {
-      e.printStackTrace();
     }
-
-    return apps;
   }
+
 }
+
+

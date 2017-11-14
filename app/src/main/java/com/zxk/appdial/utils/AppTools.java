@@ -95,8 +95,8 @@ public class AppTools {
         }
         myAppInfo.setIcon(packageInfo.applicationInfo.loadIcon(packageManager));
         apps.add(myAppInfo);
-        countDownLatch.countDown();
       }
+      countDownLatch.countDown();
     }
   }
 

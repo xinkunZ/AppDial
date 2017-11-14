@@ -43,10 +43,12 @@ public class AppTools {
         }
         countDownLatch = new CountDownLatch(count + (haveTail ? 1 : 0));
         for (int i = 0; i < count; i++) {
+          Log.d(AppTools.class.getName(), String.format("从%s 到 %s", i * threadSize, i * threadSize + threadSize));
           List<PackageInfo> l = packageInfos.subList(i * threadSize, i * threadSize + threadSize);
           new FilterWorker(l).start();
         }
         if (haveTail) {
+          Log.d(AppTools.class.getName(), String.format("从%s 到 %s", count * threadSize, size));
           List<PackageInfo> latest = packageInfos.subList(count * threadSize, size);
           new FilterWorker(latest).start();
         }
@@ -78,6 +80,7 @@ public class AppTools {
     @Override
     public void run() {
       super.run();
+      Log.d(AppTools.class.getName(), "遍历内容： " + list.toString());
       for (int i = 0; i < list.size(); i++) {
         PackageInfo packageInfo = list.get(i);
         //过滤不能打开的app

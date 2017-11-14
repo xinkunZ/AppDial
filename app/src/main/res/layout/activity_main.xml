@@ -39,6 +39,7 @@
 			android:layout_weight="1"
 			android:layout_marginBottom="-8dp"
 			android:background="@drawable/selector"
+			android:onClick="clickButton"
 			my:t9Chars=""
 			my:num="1"
 		/>
@@ -49,6 +50,7 @@
 			android:layout_width="0dp"
 			android:layout_marginBottom="-8dp"
 			android:layout_weight="1"
+			android:onClick="clickButton"
 			my:t9Chars="abc"
 			my:num="2"
 		/>
@@ -60,6 +62,7 @@
 			android:layout_width="0dp"
 			android:layout_marginBottom="-8dp"
 			android:layout_weight="1"
+			android:onClick="clickButton"
 			my:t9Chars="def"
 			my:num="3" />
 	</LinearLayout>
@@ -75,6 +78,7 @@
 			android:layout_width="0dp"
 			android:layout_weight="1"
 			android:background="@drawable/selector"
+			android:onClick="clickButton"
 			my:t9Chars="ghi"
 			my:num="4" />
 		<com.zxk.appdial.cmp.MyButton
@@ -83,6 +87,7 @@
 			android:layout_height="match_parent"
 			android:layout_width="0dp"
 			android:layout_weight="1"
+			android:onClick="clickButton"
 			my:t9Chars="jkl"
 			my:num="5" />
 		<com.zxk.appdial.cmp.MyButton
@@ -93,6 +98,7 @@
 			android:layout_height="match_parent"
 			android:layout_width="0dp"
 			android:layout_weight="1"
+			android:onClick="clickButton"
 			my:t9Chars="mno"
 			my:num="6" />
 	</LinearLayout>
@@ -107,6 +113,7 @@
 			android:layout_width="0dp"
 			android:layout_weight="1"
 			android:background="@drawable/selector"
+			android:onClick="clickButton"
 			my:t9Chars="pqrs"
 			my:num="7" />
 		<com.zxk.appdial.cmp.MyButton
@@ -115,6 +122,7 @@
 			android:layout_height="match_parent"
 			android:layout_width="0dp"
 			android:layout_weight="1"
+			android:onClick="clickButton"
 			my:t9Chars="tuv"
 			my:num="8" />
 		<com.zxk.appdial.cmp.MyButton
@@ -125,6 +133,7 @@
 			android:layout_height="match_parent"
 			android:layout_width="0dp"
 			android:layout_weight="1"
+			android:onClick="clickButton"
 			my:t9Chars="wxyz"
 			my:num="9" />
 	</LinearLayout>
@@ -147,6 +156,7 @@
 			android:layout_height="match_parent"
 			android:layout_width="0dp"
 			android:layout_weight="1"
+			android:onClick="clickButton"
 			my:t9Chars=""
 			my:num="0" />
 		<com.zxk.appdial.cmp.MyButton
@@ -157,6 +167,7 @@
 			android:layout_height="match_parent"
 			android:layout_width="0dp"
 			android:layout_weight="1"
+			android:onClick="clickButton"
 			my:t9Chars=""
 			my:num="c"
 		/>

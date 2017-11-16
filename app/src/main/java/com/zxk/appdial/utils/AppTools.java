@@ -1,29 +1,35 @@
 package com.zxk.appdial.utils;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
-import java.util.concurrent.CountDownLatch;
 
+import android.app.Activity;
 import android.content.Intent;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.util.Log;
 import com.zxk.appdial.model.LocalApps;
+import net.sourceforge.pinyin4j.PinyinHelper;
+import net.sourceforge.pinyin4j.format.HanyuPinyinCaseType;
+import net.sourceforge.pinyin4j.format.HanyuPinyinOutputFormat;
+import net.sourceforge.pinyin4j.format.HanyuPinyinToneType;
 
 /**
  * @author zhangxinkun
  */
-public class AppTools {
+public class AppTools implements ThreadHelper.ThreadHeplerUser<PackageInfo> {
 
   private volatile List<LocalApps> apps = null;
 
-  private int threadSize = 20;
-  private CountDownLatch countDownLatch;
-
   private PackageManager packageManager;
+  private CountHelper countHelper;
+  private Activity mainActivity;
 
-  public AppTools(PackageManager packageManager) {
+  public AppTools(PackageManager packageManager, Activity mainActivity) {
     this.packageManager = packageManager;
+    this.countHelper = new CountHelper();
+    this.mainActivity = mainActivity;
   }
 
   public List<LocalApps> scanLocalInstallAppList() {
@@ -33,74 +39,63 @@ public class AppTools {
     apps = new ArrayList<>();
     try {
       List<PackageInfo> packageInfos = packageManager.getInstalledPackages(0);
-
-      int size = packageInfos.size();
-      if (size > 50) {
-        int count = size / threadSize;
-        boolean haveTail = false;
-        if (count * threadSize != size) {
-          haveTail = true;
-        }
-        countDownLatch = new CountDownLatch(count + (haveTail ? 1 : 0));
-        for (int i = 0; i < count; i++) {
-          Log.d(AppTools.class.getName(), String.format("从%s 到 %s", i * threadSize, i * threadSize + threadSize));
-          List<PackageInfo> l = packageInfos.subList(i * threadSize, i * threadSize + threadSize);
-          new FilterWorker(l).start();
-        }
-        if (haveTail) {
-          Log.d(AppTools.class.getName(), String.format("从%s 到 %s", count * threadSize, size));
-          List<PackageInfo> latest = packageInfos.subList(count * threadSize, size);
-          new FilterWorker(latest).start();
-        }
-      } else {
-        countDownLatch = new CountDownLatch(1);
-        new FilterWorker(packageInfos).start();
-      }
+      new ThreadHelper<>(packageInfos, this, 16).exe();//多开点线程
     } catch (RuntimeException e) {
       e.printStackTrace();
     }
-
-    try {
-      countDownLatch.await();
-    } catch (InterruptedException e) {
-      e.printStackTrace();
-    }
-
+    Collections.sort(apps);
+    Collections.reverse(apps);
     return apps;
   }
 
-  private class FilterWorker extends Thread {
-
-    private List<PackageInfo> list;
-
-    public FilterWorker(List<PackageInfo> l) {
-      this.list = l;
-    }
-
-    @Override
-    public void run() {
-      super.run();
-      Log.d(AppTools.class.getName(), "遍历内容： " + list.toString());
-      for (int i = 0; i < list.size(); i++) {
-        PackageInfo packageInfo = list.get(i);
-        //过滤不能打开的app
-        Intent intent = packageManager.getLaunchIntentForPackage(packageInfo.packageName);
-        if (intent == null) {
-          continue;
-        }
-        LocalApps myAppInfo = new LocalApps();
-        myAppInfo.setPackageName(packageInfo.packageName);
-        myAppInfo.setAppName(packageInfo.applicationInfo.loadLabel(packageManager).toString());
-        myAppInfo.setClassName(packageInfo.applicationInfo.className);
-
-        if (packageInfo.applicationInfo.loadIcon(packageManager) == null) {
-          continue;
-        }
-        myAppInfo.setIcon(packageInfo.applicationInfo.loadIcon(packageManager));
-        apps.add(myAppInfo);
+  @Override
+  public void run(List<PackageInfo> list) {
+    Log.d(AppTools.class.getName(), "遍历内容： " + list.toString());
+    for (int i = 0; i < list.size(); i++) {
+      PackageInfo packageInfo = list.get(i);
+      //过滤不能打开的app
+      Intent intent = packageManager.getLaunchIntentForPackage(packageInfo.packageName);
+      if (intent == null) {
+        continue;
       }
-      countDownLatch.countDown();
+      LocalApps myAppInfo = new LocalApps();
+      myAppInfo.setPackageName(packageInfo.packageName);
+      myAppInfo.setAppName(packageInfo.applicationInfo.loadLabel(packageManager).toString());
+      myAppInfo.setClassName(packageInfo.applicationInfo.className);
+      myAppInfo.setPinyin(getPinyin(myAppInfo.getAppName(), myAppInfo.getPackageName()));
+      myAppInfo.setCount(countHelper.getCount(mainActivity, myAppInfo.getAppName()));
+      if (packageInfo.applicationInfo.loadIcon(packageManager) == null) {
+        continue;
+      }
+      myAppInfo.setIcon(packageInfo.applicationInfo.loadIcon(packageManager));
+      apps.add(myAppInfo);
     }
+  }
+
+  private String getPinyin(String appName, String defaultName) {
+    try {
+      HanyuPinyinOutputFormat format = new HanyuPinyinOutputFormat();
+      format.setCaseType(HanyuPinyinCaseType.LOWERCASE);
+      format.setToneType(HanyuPinyinToneType.WITHOUT_TONE);
+      StringBuilder sb = new StringBuilder();
+      char[] chars = appName.toCharArray();
+      for (char aChar : chars) {
+        String[] strings = PinyinHelper.toHanyuPinyinStringArray(aChar, format);
+        if (strings != null && strings.length > 0) {
+          sb.append(strings[0]);
+        } else {
+          sb.append(aChar);
+        }
+      }
+      return sb.toString();
+    } catch (Exception e) {
+      return defaultName;
+    }
+  }
+
+  @Override
+  public void afterRun() {
+
   }
 
 }

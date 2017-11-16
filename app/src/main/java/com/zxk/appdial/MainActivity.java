@@ -3,7 +3,6 @@ package com.zxk.appdial;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.concurrent.CountDownLatch;
 
 import android.app.Activity;
 import android.content.Intent;
@@ -20,28 +19,35 @@ import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
+import com.google.firebase.analytics.FirebaseAnalytics;
 import com.t9search.model.PinyinSearchUnit;
 import com.t9search.util.PinyinUtil;
 import com.t9search.util.T9Util;
-import com.zxk.appdial.cmp.MyButton;
 import com.zxk.appdial.model.LocalApps;
 import com.zxk.appdial.utils.AppTools;
+import com.zxk.appdial.utils.CountHelper;
+import com.zxk.appdial.utils.ThreadHelper;
 
-public class MainActivity extends Activity {
+public class MainActivity extends Activity implements ThreadHelper.ThreadHeplerUser<LocalApps> {
 
   private ListView apppsListView;
   private ListViewAdapter listViewAdapter;
 
   private TextView numberTextView;
   private AppTools appTools;
+  private CountHelper countHelper;
+
+  private FirebaseAnalytics firebaseAnalytics;
 
   @Override
   protected void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
     setContentView(R.layout.activity_main);
+    firebaseAnalytics = FirebaseAnalytics.getInstance(this);
     apppsListView = (ListView) findViewById(R.id.appList);
     numberTextView = (TextView) findViewById(R.id.numberTextView);
-    appTools = new AppTools(getPackageManager());
+    appTools = new AppTools(getPackageManager(), this);
+    countHelper = new CountHelper();
     listViewAdapter = new ListViewAdapter();
     apppsListView.setAdapter(listViewAdapter);
     apppsListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
@@ -49,6 +55,12 @@ public class MainActivity extends Activity {
       @Override
       public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
         LocalApps item = (LocalApps) listViewAdapter.getItem(position);
+        Bundle bundle = new Bundle();
+        bundle.putString(FirebaseAnalytics.Param.ITEM_ID, item.getAppName());
+        firebaseAnalytics.logEvent(FirebaseAnalytics.Event.SELECT_CONTENT, bundle);
+        item.setCount(item.getCount() + 1);
+        countHelper.recordAppCount(item.getAppName(), item.getCount(), MainActivity.this);
+
         PackageManager packageManager = getPackageManager();
         Intent intent = packageManager.getLaunchIntentForPackage(item.getPackageName());
         startActivity(intent);
@@ -57,6 +69,19 @@ public class MainActivity extends Activity {
     });
 
     initAppList();
+  }
+
+  @Override
+  protected void onResume() {
+    if (appInfos != null) {
+      Collections.sort(appInfos);
+      Collections.reverse(appInfos);
+    }
+    if (lastApps != null) {
+      Collections.sort(lastApps);
+      Collections.reverse(lastApps);
+    }
+    super.onResume();
   }
 
   public Handler mHandler = new Handler();
@@ -140,26 +165,9 @@ public class MainActivity extends Activity {
       public void run() {
         numberTextView.setText(string.toString());
         t9Filter(isDelete);
-
-        if (countDownLatch != null) {
-          try {
-            //等待所有的搜索线程跑完
-            countDownLatch.await();
-          } catch (InterruptedException e) {
-            e.printStackTrace();
-          }
-        }
-        Log.d("搜索", "结果 - " + filter);
-        listViewAdapter.setData(filter);
-        lastApps = new ArrayList<>();
-        lastApps.addAll(filter);
       }
     });
   }
-
-  private CountDownLatch countDownLatch = null;
-
-  private final int threadSize = 20;
 
   private void t9Filter(boolean delete) {
     filter.clear();
@@ -167,6 +175,7 @@ public class MainActivity extends Activity {
       //为空则展示全部
       filter = new ArrayList<>();
       filter.addAll(appInfos);
+      afterRun();
     } else {
       if (delete) {
         //退格 重查 后续考虑加入上上笔搜索结果直接获取
@@ -174,52 +183,30 @@ public class MainActivity extends Activity {
         lastApps.addAll(appInfos);
       }
       Log.d("搜索 - ", String.format("从%s中 T9搜索 %s", lastApps, string));
-      int size = lastApps.size();
-      if (size > 50) {
-
-        int count = size / threadSize;
-        boolean haveTail = false;
-        if (count * threadSize != size) {
-          haveTail = true;
-        }
-        countDownLatch = new CountDownLatch(count + (haveTail ? 1 : 0));
-        for (int i = 0; i < count; i++) {
-          List<LocalApps> l = lastApps.subList(i * threadSize, i * threadSize + threadSize);
-          new Worker(l).start();
-        }
-        if (haveTail) {
-          List<LocalApps> latest = lastApps.subList(count * threadSize - 1, size - 1);
-          new Worker(latest).start();
-        }
-      } else {
-        countDownLatch = new CountDownLatch(1);
-        new Worker(lastApps).start();
-      }
+      new ThreadHelper<>(lastApps, this).exe();
     }
   }
 
-  private class Worker extends Thread {
-
-    private List<LocalApps> apps = new ArrayList<>();
-
-    public Worker(List<LocalApps> apps) {
-      this.apps = apps;
-    }
-
-    @Override
-    public void run() {
-      List<LocalApps> newList = new ArrayList<>();
-      for (LocalApps localApps : apps) {
-        PinyinSearchUnit unit = new PinyinSearchUnit();
-        unit.setBaseData(localApps.getAppName());
-        PinyinUtil.parse(unit);
-        if (T9Util.match(unit, string.toString())) {
-          newList.add(localApps);
-        }
+  @Override
+  public void run(List<LocalApps> list) {
+    List<LocalApps> newList = new ArrayList<>();
+    for (LocalApps localApps : list) {
+      PinyinSearchUnit unit = new PinyinSearchUnit();
+      unit.setBaseData(localApps.getAppName());
+      PinyinUtil.parse(unit);
+      if (T9Util.match(unit, string.toString())) {
+        newList.add(localApps);
       }
-      syncAdd(newList);
-      countDownLatch.countDown();
     }
+    syncAdd(newList);
+  }
+
+  @Override
+  public void afterRun() {
+    Log.d("搜索", "结果 - " + filter);
+    listViewAdapter.setData(filter);
+    lastApps = new ArrayList<>();
+    lastApps.addAll(filter);
   }
 
   private synchronized void syncAdd(List<LocalApps> newList) {

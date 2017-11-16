@@ -13,11 +13,16 @@ public class ThreadHelper<T> {
   private int threadSize = 20;
   private CountDownLatch countDownLatch;
 
-  private HeplerUser<T> user;
+  private ThreadHeplerUser<T> user;
 
-  public ThreadHelper(List<T> list, HeplerUser<T> user) {
+  public ThreadHelper(List<T> list, ThreadHeplerUser<T> user) {
+    this(list, user, 20);
+  }
+
+  public ThreadHelper(List<T> list, ThreadHeplerUser<T> user,int threadSize) {
     this.list = list;
     this.user = user;
+    this.threadSize = threadSize;
   }
 
   public void exe() {
@@ -67,7 +72,7 @@ public class ThreadHelper<T> {
     }
   }
 
-  public interface HeplerUser<T> {
+  public interface ThreadHeplerUser<T> {
 
     void run(List<T> list);
 

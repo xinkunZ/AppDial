@@ -3,11 +3,12 @@ package com.zxk.appdial.model;
 import java.io.Serializable;
 
 import android.graphics.drawable.Drawable;
+import android.support.annotation.NonNull;
 
 /**
  * @author zhangxinkun
  */
-public class LocalApps implements Serializable {
+public class LocalApps implements Serializable, Comparable<LocalApps> {
 
   private static final long serialVersionUID = 1L;
   private String appName;
@@ -16,6 +17,7 @@ public class LocalApps implements Serializable {
   private Drawable icon;
   private String simpleChn;
   private String pinyin;
+  private int count = 0;
 
   @Override
   public String toString() {
@@ -41,6 +43,23 @@ public class LocalApps implements Serializable {
     int result = appName != null ? appName.hashCode() : 0;
     result = 31 * result + (packageName != null ? packageName.hashCode() : 0);
     return result;
+  }
+
+  @Override
+  public int compareTo(@NonNull LocalApps another) {
+    if (getCount() != another.getCount()) {
+      return getCount() - another.getCount();//常用的排前面
+    } else {
+      return another.getPinyin().compareTo(getPinyin());//字母序
+    }
+  }
+
+  public int getCount() {
+    return count;
+  }
+
+  public void setCount(int count) {
+    this.count = count;
   }
 
   public String getClassName() {

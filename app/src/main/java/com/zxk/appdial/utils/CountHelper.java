@@ -36,7 +36,7 @@ public class CountHelper {
         try {
           inputStream.close();
         } catch (IOException e) {
-
+          Log.e(CountHelper.class.getName(), "error", e);
         }
       }
     }

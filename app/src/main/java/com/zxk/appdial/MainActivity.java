@@ -7,6 +7,7 @@ import java.util.List;
 import android.app.Activity;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.util.Log;
@@ -56,6 +57,7 @@ public class MainActivity extends Activity implements ThreadHelper.ThreadHeplerU
       public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
         LocalApps item = (LocalApps) listViewAdapter.getItem(position);
         Bundle bundle = new Bundle();
+        bundle.putString(FirebaseAnalytics.Param.CONTENT_TYPE, Build.MODEL);
         bundle.putString(FirebaseAnalytics.Param.ITEM_ID, item.getAppName());
         firebaseAnalytics.logEvent(FirebaseAnalytics.Event.SELECT_CONTENT, bundle);
         item.setCount(item.getCount() + 1);

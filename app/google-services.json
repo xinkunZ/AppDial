@@ -1,27 +1,27 @@
 {
   "project_info": {
-    "project_number": "187928494539",
-    "firebase_url": "https://appdial-9fec6.firebaseio.com",
-    "project_id": "appdial-9fec6",
-    "storage_bucket": "appdial-9fec6.appspot.com"
+    "project_number": "919237997620",
+    "firebase_url": "https://app-dial.firebaseio.com",
+    "project_id": "app-dial",
+    "storage_bucket": "app-dial.appspot.com"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:187928494539:android:380032cf59cdc842",
+        "mobilesdk_app_id": "1:919237997620:android:380032cf59cdc842",
         "android_client_info": {
           "package_name": "com.zxk.appdial"
         }
       },
       "oauth_client": [
         {
-          "client_id": "187928494539-4in94otda6eg53k5uniptlbrcaa7upb2.apps.googleusercontent.com",
+          "client_id": "919237997620-mahkc82rlnkut5173fd3vbd2bijcqsuf.apps.googleusercontent.com",
           "client_type": 3
         }
       ],
       "api_key": [
         {
-          "current_key": "AIzaSyDhdnr4C5yCIlZKD1fJjyKJyIEMOQDY4mU"
+          "current_key": "AIzaSyBNJWq4hdD7QnncE-sdnd1M3gJsv63_TBA"
         }
       ],
       "services": {

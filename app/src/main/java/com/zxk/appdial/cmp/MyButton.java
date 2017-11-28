@@ -8,7 +8,6 @@ import android.graphics.Paint;
 import android.util.AttributeSet;
 import android.util.TypedValue;
 import android.widget.Button;
-import android.widget.TextView;
 import com.zxk.appdial.R;
 
 /**
@@ -46,7 +45,6 @@ public class MyButton extends Button {
   @Override
   protected void onDraw(Canvas canvas) {
     super.onDraw(canvas);
-    //绘制第一行文字
     Paint paint = new Paint();
     float line1 = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_SP, 30, getResources().getDisplayMetrics());
     float line2 = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_SP, 19, getResources().getDisplayMetrics());
@@ -59,7 +57,6 @@ public class MyButton extends Button {
     int y = this.getHeight() / 3;
     canvas.drawText(num + "", x, 2 * y, paint);
 
-    //绘制第二行文字
     paint.setTextSize(line2);
     paint.setColor(Color.GRAY);
 

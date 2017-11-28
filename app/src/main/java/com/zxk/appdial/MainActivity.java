@@ -18,12 +18,14 @@ import android.widget.AdapterView;
 import android.widget.BaseAdapter;
 import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.TextView;
 import com.google.firebase.analytics.FirebaseAnalytics;
 import com.t9search.model.PinyinSearchUnit;
 import com.t9search.util.PinyinUtil;
 import com.t9search.util.T9Util;
+import com.zxk.appdial.cmp.MyButton;
 import com.zxk.appdial.model.LocalApps;
 import com.zxk.appdial.utils.AppTools;
 import com.zxk.appdial.utils.CountHelper;
@@ -44,12 +46,18 @@ public class MainActivity extends Activity implements ThreadHelper.ThreadHeplerU
   protected void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
     setContentView(R.layout.activity_main);
+    createEventHandlers();
+    initAppList();
+  }
+
+  private void createEventHandlers() {
     firebaseAnalytics = FirebaseAnalytics.getInstance(this);
     apppsListView = (ListView) findViewById(R.id.appList);
     numberTextView = (TextView) findViewById(R.id.numberTextView);
     appTools = new AppTools(getPackageManager(), this);
     countHelper = new CountHelper();
     listViewAdapter = new ListViewAdapter();
+    fuckOPPO();
     apppsListView.setAdapter(listViewAdapter);
     apppsListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
 
@@ -69,8 +77,40 @@ public class MainActivity extends Activity implements ThreadHelper.ThreadHeplerU
       }
 
     });
+  }
 
-    initAppList();
+  private void fuckOPPO() {
+    //辣鸡oppo需要手动指定id创建事件
+    LinearLayout view = (LinearLayout) findViewById(R.id.lineOne);
+    for (int i = 0; i < view.getChildCount(); i++) {
+      View childAt = view.getChildAt(i);
+      if (childAt instanceof MyButton) {
+        childAt.setOnClickListener(this::clickButton);
+      }
+    }
+    view = (LinearLayout) findViewById(R.id.lineTwo);
+    for (int i = 0; i < view.getChildCount(); i++) {
+      View childAt = view.getChildAt(i);
+      if (childAt instanceof MyButton) {
+        childAt.setOnClickListener(this::clickButton);
+      }
+    }
+    view = (LinearLayout) findViewById(R.id.lineThree);
+    for (int i = 0; i < view.getChildCount(); i++) {
+      View childAt = view.getChildAt(i);
+      if (childAt instanceof MyButton) {
+        childAt.setOnClickListener(this::clickButton);
+      }
+    }
+    MyButton buttonV = (MyButton) findViewById(R.id.buttonv);
+    buttonV.setOnClickListener(this::miniDial);
+
+    MyButton button0 = (MyButton) findViewById(R.id.button0);
+    button0.setOnClickListener(this::clickButton);
+
+    MyButton buttonC = (MyButton) findViewById(R.id.buttonc);
+    buttonC.setOnClickListener(this::clickButton);
+    //垃圾oppo结束
   }
 
   @Override

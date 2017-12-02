@@ -11,7 +11,6 @@
 		parent="android:Animation.Activity">
 		<item name="android:activityOpenEnterAnimation">@anim/push_bottom_in</item>
 		<item name="android:activityCloseExitAnimation">@anim/push_bottom_out</item>
-
 	</style>
 
 	<style name="Transparent"
@@ -20,18 +19,11 @@
 		<item name="android:windowIsTranslucent">true</item>
 		<item name="android:backgroundDimEnabled">true</item>
 		<item name="android:windowAnimationStyle">@style/InOutAnimation</item>
+		<item name="android:popupMenuStyle">@android:style/Widget.Holo.Light.PopupMenu</item>
 	</style>
-
-	<style name="TransparentListItem"
-		parent="android:Theme.Material.NoActionBar">
-		<item name="android:windowBackground">@android:color/transparent</item>
-		<item name="android:windowIsTranslucent">true</item>
-		<item name="android:backgroundDimEnabled">true</item>
-	</style>
-
 
 	<style name="ButtonStyle"
-		parent="android:Theme.Material.Light">
+		parent="android:Widget.Material.Button">
 		<item name="android:backgroundDimEnabled">true</item>
 		<item name="android:textColor">#FFFFFFFF</item>
 		<item name="android:textSize">20sp</item>

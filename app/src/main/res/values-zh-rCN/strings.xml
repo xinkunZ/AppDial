@@ -16,7 +16,6 @@
 	<string name="button_0">0</string>
 	<string name="button_delete">c</string>
 
-	<string name="title_activity_list_item">ListItem</string>
 	<string name="appInfo">应用信息</string>
 	<string name="uninstall">卸载</string>
 	<string name="operation">操作</string>

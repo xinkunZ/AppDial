@@ -30,7 +30,7 @@
 	<LinearLayout style="@style/DialLineStyle"
 		android:id="@+id/lineOne">
 
-		<com.zxk.appdial.cmp.MyButton android:layout_marginLeft="-8dp"
+		<com.zxk.appdial.cmp.MyButton
 			android:shape="rectangle"
 			android:layout_marginStart="-8dp"
 			android:theme="@style/ButtonStyle"
@@ -73,7 +73,7 @@
 
 	<LinearLayout style="@style/DialLineStyle"
 		android:id="@+id/lineTwo">
-		<com.zxk.appdial.cmp.MyButton android:layout_marginLeft="-8dp"
+		<com.zxk.appdial.cmp.MyButton
 			android:shape="rectangle"
 			android:layout_marginStart="-8dp"
 			android:theme="@style/ButtonStyle"
@@ -96,7 +96,6 @@
 			my:t9Chars="jkl"
 			my:num="5" />
 		<com.zxk.appdial.cmp.MyButton
-			android:layout_marginRight="-8dp"
 			android:layout_marginEnd="-8dp"
 			android:theme="@style/ButtonStyle"
 			android:background="@drawable/selector"
@@ -111,7 +110,7 @@
 
 	<LinearLayout style="@style/DialLineStyle"
 		android:id="@+id/lineThree">
-		<com.zxk.appdial.cmp.MyButton android:layout_marginLeft="-8dp"
+		<com.zxk.appdial.cmp.MyButton
 			android:shape="rectangle"
 			android:layout_marginStart="-8dp"
 			android:theme="@style/ButtonStyle"
@@ -134,7 +133,6 @@
 			my:t9Chars="tuv"
 			my:num="8" />
 		<com.zxk.appdial.cmp.MyButton
-			android:layout_marginRight="-8dp"
 			android:layout_marginEnd="-8dp"
 			android:theme="@style/ButtonStyle"
 			android:background="@drawable/selector"
@@ -148,7 +146,7 @@
 	</LinearLayout>
 
 	<LinearLayout style="@style/DialLineStyle">
-		<com.zxk.appdial.cmp.MyButton android:layout_marginLeft="-8dp"
+		<com.zxk.appdial.cmp.MyButton
 			android:shape="rectangle"
 			android:layout_marginStart="-8dp"
 			android:theme="@style/ButtonStyle"
@@ -171,7 +169,6 @@
 			my:t9Chars=""
 			my:num="0" />
 		<com.zxk.appdial.cmp.MyButton
-			android:layout_marginRight="-8dp"
 			android:layout_marginEnd="-8dp"
 			android:theme="@style/ButtonStyle"
 			android:background="@drawable/selector"

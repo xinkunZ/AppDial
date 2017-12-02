@@ -11,6 +11,8 @@ import android.content.Context;
 import android.util.Log;
 
 /**
+ * 伟大的计数君
+ *
  * @author zhangxinkun
  */
 public class CountHelper {

@@ -7,11 +7,15 @@ import java.util.List;
 import android.app.Activity;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
-import android.util.Log;
+import android.provider.Settings;
+import android.view.ContextMenu;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
@@ -26,18 +30,18 @@ import com.t9search.model.PinyinSearchUnit;
 import com.t9search.util.PinyinUtil;
 import com.t9search.util.T9Util;
 import com.zxk.appdial.cmp.MyButton;
-import com.zxk.appdial.model.LocalApps;
-import com.zxk.appdial.utils.AppTools;
+import com.zxk.appdial.model.LocalApp;
+import com.zxk.appdial.utils.AppHelper;
 import com.zxk.appdial.utils.CountHelper;
 import com.zxk.appdial.utils.ThreadHelper;
 
-public class MainActivity extends Activity implements ThreadHelper.ThreadHeplerUser<LocalApps> {
+public class MainActivity extends Activity implements ThreadHelper.ThreadHeplerUser<LocalApp> {
 
   private ListView apppsListView;
   private ListViewAdapter listViewAdapter;
 
   private TextView numberTextView;
-  private AppTools appTools;
+  private AppHelper appHelper;
   private CountHelper countHelper;
 
   private FirebaseAnalytics firebaseAnalytics;
@@ -54,7 +58,7 @@ public class MainActivity extends Activity implements ThreadHelper.ThreadHeplerU
     firebaseAnalytics = FirebaseAnalytics.getInstance(this);
     apppsListView = (ListView) findViewById(R.id.appList);
     numberTextView = (TextView) findViewById(R.id.numberTextView);
-    appTools = new AppTools(getPackageManager(), this);
+    appHelper = new AppHelper(getPackageManager(), this);
     countHelper = new CountHelper();
     listViewAdapter = new ListViewAdapter();
     fuckOPPO();
@@ -63,7 +67,7 @@ public class MainActivity extends Activity implements ThreadHelper.ThreadHeplerU
 
       @Override
       public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-        LocalApps item = (LocalApps) listViewAdapter.getItem(position);
+        LocalApp item = (LocalApp) listViewAdapter.getItem(position);
         Bundle bundle = new Bundle();
         bundle.putString(FirebaseAnalytics.Param.CONTENT_TYPE, Build.MODEL);
         bundle.putString(FirebaseAnalytics.Param.ITEM_ID, item.getAppName());
@@ -77,6 +81,32 @@ public class MainActivity extends Activity implements ThreadHelper.ThreadHeplerU
       }
 
     });
+
+    registerForContextMenu(apppsListView);
+  }
+
+  @Override
+  public void onCreateContextMenu(ContextMenu menu, View v, ContextMenu.ContextMenuInfo menuInfo) {
+    menu.setHeaderTitle(R.string.operation);
+    menu.add(0, ((AdapterView.AdapterContextMenuInfo) menuInfo).position, Menu.NONE, R.string.appInfo);
+    menu.add(0, ((AdapterView.AdapterContextMenuInfo) menuInfo).position, Menu.NONE, R.string.uninstall);
+  }
+
+  @Override
+  public boolean onContextItemSelected(MenuItem item) {
+    int itemId = item.getItemId();
+    LocalApp selectedApp = (LocalApp) apppsListView.getItemAtPosition(itemId);
+    if (getString(R.string.appInfo).equals(item.getTitle())) {
+      Intent intent = new Intent();
+      intent.setAction(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
+      intent.setData(Uri.fromParts("package", selectedApp.getPackageName(), null));
+      startActivity(intent);
+    } else {
+      Uri uri = Uri.parse("package:" + selectedApp.getPackageName());
+      Intent intent = new Intent(Intent.ACTION_DELETE, uri);
+      startActivity(intent);
+    }
+    return true;
   }
 
   private void fuckOPPO() {
@@ -127,28 +157,22 @@ public class MainActivity extends Activity implements ThreadHelper.ThreadHeplerU
   }
 
   public Handler mHandler = new Handler();
-  private static List<LocalApps> appInfos = null;
+  private static List<LocalApp> appInfos = null;
 
-  private static List<LocalApps> lastApps = new ArrayList<>();
+  private static List<LocalApp> lastApps = new ArrayList<>();
 
-  private volatile static List<LocalApps> filter = Collections.synchronizedList(new ArrayList<LocalApps>());
+  private volatile static List<LocalApp> filter = Collections.synchronizedList(new ArrayList<LocalApp>());
 
   private void initAppList() {
-    mHandler.post(new Runnable() {
-      @Override
-      public void run() {
-        //扫描得到APP列表
-        if (appInfos == null) {
-          appInfos = appTools.scanLocalInstallAppList();
-        }
-        mHandler.post(new Runnable() {
-          @Override
-          public void run() {
-            listViewAdapter.setData(appInfos);
-            lastApps.addAll(appInfos);
-          }
-        });
+    mHandler.post(() -> {
+      //扫描得到APP列表
+      if (appInfos == null) {
+        appInfos = appHelper.scanLocalInstallAppList();
       }
+      mHandler.post(() -> {
+        listViewAdapter.setData(appInfos);
+        lastApps.addAll(appInfos);
+      });
     });
   }
 
@@ -201,13 +225,9 @@ public class MainActivity extends Activity implements ThreadHelper.ThreadHeplerU
   }
 
   private void searchAndLoadToUI(final boolean isDelete) {
-    mHandler.post(new Runnable() {
-
-      @Override
-      public void run() {
-        numberTextView.setText(string.toString());
-        t9Filter(isDelete);
-      }
+    mHandler.post(() -> {
+      numberTextView.setText(string.toString());
+      t9Filter(isDelete);
     });
   }
 
@@ -224,20 +244,19 @@ public class MainActivity extends Activity implements ThreadHelper.ThreadHeplerU
         lastApps = new ArrayList<>();
         lastApps.addAll(appInfos);
       }
-      Log.d("搜索 - ", String.format("从%s中 T9搜索 %s", lastApps, string));
       new ThreadHelper<>(lastApps, this).exe();
     }
   }
 
   @Override
-  public void run(List<LocalApps> list) {
-    List<LocalApps> newList = new ArrayList<>();
-    for (LocalApps localApps : list) {
+  public void run(List<LocalApp> list) {
+    List<LocalApp> newList = new ArrayList<>();
+    for (LocalApp localApp : list) {
       PinyinSearchUnit unit = new PinyinSearchUnit();
-      unit.setBaseData(localApps.getAppName());
+      unit.setBaseData(localApp.getAppName());
       PinyinUtil.parse(unit);
       if (T9Util.match(unit, string.toString())) {
-        newList.add(localApps);
+        newList.add(localApp);
       }
     }
     syncAdd(newList);
@@ -245,16 +264,15 @@ public class MainActivity extends Activity implements ThreadHelper.ThreadHeplerU
 
   @Override
   public void afterRun() {
-    Log.d("搜索", "结果 - " + filter);
     listViewAdapter.setData(filter);
     lastApps = new ArrayList<>();
     lastApps.addAll(filter);
   }
 
-  private synchronized void syncAdd(List<LocalApps> newList) {
-    for (LocalApps localApps : newList) {
-      if (!filter.contains(localApps)) {
-        filter.add(localApps);
+  private synchronized void syncAdd(List<LocalApp> newList) {
+    for (LocalApp localApp : newList) {
+      if (!filter.contains(localApp)) {
+        filter.add(localApp);
       }
     }
   }
@@ -268,7 +286,7 @@ public class MainActivity extends Activity implements ThreadHelper.ThreadHeplerU
 
   private class ListViewAdapter extends BaseAdapter {
 
-    private List<LocalApps> data = new ArrayList<LocalApps>();
+    private List<LocalApp> data = new ArrayList<>();
 
     @Override
 
@@ -288,7 +306,7 @@ public class MainActivity extends Activity implements ThreadHelper.ThreadHeplerU
 
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
-      LocalApps item = (LocalApps) getItem(position);
+      LocalApp item = (LocalApp) getItem(position);
       ViewHolder mViewHolder;
       View view;
       if (convertView == null) {
@@ -306,7 +324,7 @@ public class MainActivity extends Activity implements ThreadHelper.ThreadHeplerU
       return view;
     }
 
-    public void setData(List<LocalApps> data) {
+    public void setData(List<LocalApp> data) {
       this.data = data;
       notifyDataSetChanged();
     }

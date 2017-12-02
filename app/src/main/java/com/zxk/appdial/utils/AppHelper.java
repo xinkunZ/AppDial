@@ -9,30 +9,31 @@ import android.content.Intent;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.util.Log;
-import com.zxk.appdial.model.LocalApps;
+import com.zxk.appdial.model.LocalApp;
 import net.sourceforge.pinyin4j.PinyinHelper;
 import net.sourceforge.pinyin4j.format.HanyuPinyinCaseType;
 import net.sourceforge.pinyin4j.format.HanyuPinyinOutputFormat;
 import net.sourceforge.pinyin4j.format.HanyuPinyinToneType;
 
 /**
+ *
  * @author zhangxinkun
  */
-public class AppTools implements ThreadHelper.ThreadHeplerUser<PackageInfo> {
+public class AppHelper implements ThreadHelper.ThreadHeplerUser<PackageInfo> {
 
-  private volatile List<LocalApps> apps = null;
+  private volatile List<LocalApp> apps = null;
 
   private PackageManager packageManager;
   private CountHelper countHelper;
   private Activity mainActivity;
 
-  public AppTools(PackageManager packageManager, Activity mainActivity) {
+  public AppHelper(PackageManager packageManager, Activity mainActivity) {
     this.packageManager = packageManager;
     this.countHelper = new CountHelper();
     this.mainActivity = mainActivity;
   }
 
-  public List<LocalApps> scanLocalInstallAppList() {
+  public List<LocalApp> scanLocalInstallAppList() {
     if (apps != null) {
       return apps;
     }
@@ -50,7 +51,7 @@ public class AppTools implements ThreadHelper.ThreadHeplerUser<PackageInfo> {
 
   @Override
   public void run(List<PackageInfo> list) {
-    Log.d(AppTools.class.getName(), "遍历内容： " + list.toString());
+    Log.d(AppHelper.class.getName(), "遍历内容： " + list.toString());
     for (int i = 0; i < list.size(); i++) {
       PackageInfo packageInfo = list.get(i);
       //过滤不能打开的app
@@ -58,7 +59,7 @@ public class AppTools implements ThreadHelper.ThreadHeplerUser<PackageInfo> {
       if (intent == null) {
         continue;
       }
-      LocalApps myAppInfo = new LocalApps();
+      LocalApp myAppInfo = new LocalApp();
       myAppInfo.setPackageName(packageInfo.packageName);
       myAppInfo.setAppName(packageInfo.applicationInfo.loadLabel(packageManager).toString());
       myAppInfo.setClassName(packageInfo.applicationInfo.className);

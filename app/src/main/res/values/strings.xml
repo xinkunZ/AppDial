@@ -16,5 +16,8 @@
 	<string name="button_delete">c</string>
 
 	<string name="title_activity_list_item">ListItem</string>
+	<string name="appInfo">App info</string>
+	<string name="uninstall">uninstall</string>
+	<string name="operation">operation</string>
 
 </resources>

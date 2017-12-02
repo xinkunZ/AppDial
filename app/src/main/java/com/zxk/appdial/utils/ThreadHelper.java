@@ -5,6 +5,8 @@ import java.util.List;
 import java.util.concurrent.CountDownLatch;
 
 /**
+ * 完全看不出来这个类是我自己写的呢
+ *
  * @author zhangxinkun
  */
 public class ThreadHelper<T> {

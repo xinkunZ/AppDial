@@ -1,7 +1,8 @@
-package com.zxk.appdial;
+package com.zxk.appdial.cmp;
 
 import android.app.Activity;
 import android.os.Bundle;
+import com.zxk.appdial.R;
 
 public class ListItem extends Activity {
 

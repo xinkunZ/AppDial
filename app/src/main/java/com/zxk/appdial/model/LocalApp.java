@@ -8,7 +8,7 @@ import android.support.annotation.NonNull;
 /**
  * @author zhangxinkun
  */
-public class LocalApps implements Serializable, Comparable<LocalApps> {
+public class LocalApp implements Serializable, Comparable<LocalApp> {
 
   private static final long serialVersionUID = 1L;
   private String appName;
@@ -31,11 +31,11 @@ public class LocalApps implements Serializable, Comparable<LocalApps> {
     if (o == null || getClass() != o.getClass())
       return false;
 
-    LocalApps localApps = (LocalApps) o;
+    LocalApp localApp = (LocalApp) o;
 
-    if (appName != null ? !appName.equals(localApps.appName) : localApps.appName != null)
+    if (appName != null ? !appName.equals(localApp.appName) : localApp.appName != null)
       return false;
-    return packageName != null ? packageName.equals(localApps.packageName) : localApps.packageName == null;
+    return packageName != null ? packageName.equals(localApp.packageName) : localApp.packageName == null;
   }
 
   @Override
@@ -46,7 +46,7 @@ public class LocalApps implements Serializable, Comparable<LocalApps> {
   }
 
   @Override
-  public int compareTo(@NonNull LocalApps another) {
+  public int compareTo(@NonNull LocalApp another) {
     if (getCount() != another.getCount()) {
       return getCount() - another.getCount();//常用的排前面
     } else {

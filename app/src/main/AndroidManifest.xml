@@ -19,7 +19,7 @@
 			</intent-filter>
 		</activity>
 		<activity
-			android:name=".ListItem"
+			android:name=".cmp.ListItem"
 			android:label="@string/title_activity_list_item"
 			android:theme="@style/TransparentListItem" />
 	</application>

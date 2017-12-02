@@ -15,5 +15,6 @@
 1. 加入主题色配置 捐赠通道？
 1. more....
 
-# 
+#  License
+* [GPL v3](http://www.gnu.org/licenses/gpl-3.0.html)
 

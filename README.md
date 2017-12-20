@@ -15,6 +15,9 @@
 1. 加入主题色配置 捐赠通道？
 1. more....
 
+# 下载
+* 没钱上架Google play，酷安基佬请[戳](https://www.coolapk.com/apk/169105)
+
 #  License
 * [GPL v3](http://www.gnu.org/licenses/gpl-3.0.html)
 

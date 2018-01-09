@@ -21,7 +21,7 @@ public class ThreadHelper<T> {
     this(list, user, 20);
   }
 
-  public ThreadHelper(List<T> list, ThreadHeplerUser<T> user,int threadSize) {
+  public ThreadHelper(List<T> list, ThreadHeplerUser<T> user, int threadSize) {
     this.list = list;
     this.user = user;
     this.threadSize = threadSize;

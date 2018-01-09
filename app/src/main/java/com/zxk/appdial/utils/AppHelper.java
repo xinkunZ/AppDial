@@ -64,7 +64,7 @@ public class AppHelper implements ThreadHelper.ThreadHeplerUser<PackageInfo> {
       myAppInfo.setAppName(packageInfo.applicationInfo.loadLabel(packageManager).toString());
       myAppInfo.setClassName(packageInfo.applicationInfo.className);
       myAppInfo.setPinyin(getPinyin(myAppInfo.getAppName(), myAppInfo.getPackageName()));
-      myAppInfo.setCount(countHelper.getCount(mainActivity, myAppInfo.getAppName()));
+      myAppInfo.setCount(countHelper.getCount(mainActivity, myAppInfo.getPackageName()));
       if (packageInfo.applicationInfo.loadIcon(packageManager) == null) {
         continue;
       }

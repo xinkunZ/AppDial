@@ -4,11 +4,15 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.Properties;
 
 import android.app.Activity;
 import android.content.Context;
 import android.util.Log;
+import com.zxk.appdial.model.LocalApp;
 
 /**
  * 伟大的计数君
@@ -34,17 +38,49 @@ public class CountHelper {
     } catch (Exception e) {
       return 0;
     } finally {
-      if (inputStream != null) {
-        try {
-          inputStream.close();
-        } catch (IOException e) {
-          Log.e(CountHelper.class.getName(), "error", e);
-        }
-      }
+      saleClose(inputStream, null);
     }
   }
 
-  public void recordAppCount(final String appName, final int newValue, final Activity activity) {
+  private void saleClose(FileInputStream inputStream, FileOutputStream outputStream) {
+    try {
+      if (inputStream != null) {
+        inputStream.close();
+      }
+      if (outputStream != null) {
+        outputStream.close();
+      }
+    } catch (Exception e) {
+      Log.e(CountHelper.class.getName(), "error", e);
+    }
+  }
+
+  public List<LocalApp> getFirstFour4ShortcutsApp(Activity activity) {
+    FileInputStream inputStream = null;
+    try {
+      Properties properties = new Properties();
+      inputStream = activity.openFileInput(fileName);
+      properties.load(inputStream);
+      List<LocalApp> apps = new ArrayList<>();
+      for (Object key : properties.keySet()) {
+        try {
+          LocalApp app = new LocalApp();
+          app.setPackageName((String) key);
+          app.setCount(Integer.parseInt(properties.get(key).toString()));
+          apps.add(app);
+        } catch (Exception e) {
+          Log.e(CountHelper.class.getName(), "error", e);
+        }
+      }
+      Collections.sort(apps, (o1, o2) -> o1.getCount() - o2.getCount());
+      Collections.reverse(apps);
+      return apps.subList(0, 4);
+    } catch (Exception e) {
+      return null;
+    }
+  }
+
+  public void recordAppCount(final String packageName, final int newValue, final Activity activity) {
     new Thread(new Runnable() {
 
       @Override
@@ -65,7 +101,7 @@ public class CountHelper {
               inputStream.close();
             }
           }
-          properties.setProperty(appName, newValue + "");
+          properties.setProperty(packageName, newValue + "");
           outStream = activity.openFileOutput(fileName, Context.MODE_PRIVATE);
           properties.store(outStream, "");
           outStream.flush();
@@ -73,15 +109,9 @@ public class CountHelper {
         } catch (FileNotFoundException e) {
           e.printStackTrace();
         } catch (IOException e) {
-          e.printStackTrace();
+          Log.e(CountHelper.class.getName(), "error", e);
         } finally {
-          try {
-            if (outStream != null) {
-              outStream.close();
-            }
-          } catch (IOException e) {
-
-          }
+          saleClose(inputStream, outStream);
         }
       }
     }).start();

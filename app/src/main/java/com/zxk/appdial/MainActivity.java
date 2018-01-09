@@ -6,7 +6,15 @@ import java.util.List;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
+import android.content.pm.ShortcutInfo;
+import android.content.pm.ShortcutManager;
+import android.graphics.Bitmap;
+import android.graphics.Canvas;
+import android.graphics.PixelFormat;
+import android.graphics.drawable.Drawable;
+import android.graphics.drawable.Icon;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -45,6 +53,7 @@ public class MainActivity extends Activity implements ThreadHelper.ThreadHeplerU
   private CountHelper countHelper;
 
   private FirebaseAnalytics firebaseAnalytics;
+  private ShortcutManager shortcutManager = null;
 
   @Override
   protected void onCreate(Bundle savedInstanceState) {
@@ -52,37 +61,93 @@ public class MainActivity extends Activity implements ThreadHelper.ThreadHeplerU
     setContentView(R.layout.activity_main);
     createEventHandlers();
     initAppList();
+    createShortcuts();
+  }
+
+  private void createShortcuts() {
+    ShortcutManager shortcutManager = null;
+    if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.N_MR1) {
+      shortcutManager = getSystemService(ShortcutManager.class);
+      ShortcutInfo webShortcut = new ShortcutInfo.Builder(this, "shortcut_web")
+          .setShortLabel("github")
+          .setLongLabel("Open Tonny's github web site")
+          .setIcon(Icon.createWithResource(this, R.drawable.ic_sync_black_24dp))
+          .setIntent(new Intent(Intent.ACTION_VIEW, Uri.parse("https://marktony.github.io")))
+          .build();
+      shortcutManager.addDynamicShortcuts(Collections.singletonList(webShortcut));
+    }
   }
 
   private void createEventHandlers() {
+
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N_MR1) {
+      shortcutManager = getSystemService(ShortcutManager.class);
+    }
+
     firebaseAnalytics = FirebaseAnalytics.getInstance(this);
-    apppsListView = (ListView) findViewById(R.id.appList);
-    numberTextView = (TextView) findViewById(R.id.numberTextView);
+    apppsListView = findViewById(R.id.appList);
+    numberTextView = findViewById(R.id.numberTextView);
     appHelper = new AppHelper(getPackageManager(), this);
     countHelper = new CountHelper();
     listViewAdapter = new ListViewAdapter();
     fuckOPPO();
     apppsListView.setAdapter(listViewAdapter);
-    apppsListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-
-      @Override
-      public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-        LocalApp item = (LocalApp) listViewAdapter.getItem(position);
-        Bundle bundle = new Bundle();
-        bundle.putString(FirebaseAnalytics.Param.CONTENT_TYPE, Build.MODEL);
-        bundle.putString(FirebaseAnalytics.Param.ITEM_ID, item.getAppName());
-        firebaseAnalytics.logEvent(FirebaseAnalytics.Event.SELECT_CONTENT, bundle);
-        item.setCount(item.getCount() + 1);
-        countHelper.recordAppCount(item.getAppName(), item.getCount(), MainActivity.this);
-
-        PackageManager packageManager = getPackageManager();
-        Intent intent = packageManager.getLaunchIntentForPackage(item.getPackageName());
-        startActivity(intent);
-      }
-
+    apppsListView.setOnItemClickListener((parent, view, position, id) -> {
+      LocalApp item = (LocalApp) listViewAdapter.getItem(position);
+      Bundle bundle = new Bundle();
+      bundle.putString(FirebaseAnalytics.Param.CONTENT_TYPE, Build.MODEL);
+      bundle.putString(FirebaseAnalytics.Param.ITEM_ID, item.getAppName());
+      firebaseAnalytics.logEvent(FirebaseAnalytics.Event.SELECT_CONTENT, bundle);
+      item.setCount(item.getCount() + 1);
+      countHelper.recordAppCount(item.getPackageName(), item.getCount(), MainActivity.this);
+      updateShortcuts();
+      PackageManager packageManager = getPackageManager();
+      Intent intent = packageManager.getLaunchIntentForPackage(item.getPackageName());
+      startActivity(intent);
     });
 
     registerForContextMenu(apppsListView);
+  }
+
+  private void updateShortcuts() {
+    if (shortcutManager != null && Build.VERSION.SDK_INT >= Build.VERSION_CODES.N_MR1) {
+      List<LocalApp> apps = countHelper.getFirstFour4ShortcutsApp(this);
+      List<ShortcutInfo> shortcutInfos = new ArrayList<>();
+      if (apps != null) {
+        int max = shortcutManager.getMaxShortcutCountPerActivity();
+        max = max > apps.size() ? apps.size() : max;
+        for (int i = 0; i < max; i++) {
+          try {
+            LocalApp app = apps.get(i);
+            PackageManager packageManager = getPackageManager();
+            PackageInfo packageInfo = packageManager.getPackageInfo(app.getPackageName(), 0);
+            CharSequence appName = packageInfo.applicationInfo.loadLabel(packageManager);
+            ShortcutInfo shortcutInfo = new ShortcutInfo.Builder(this,
+                appName.toString())//
+                .setIntent(new Intent(Intent.ACTION_VIEW, Uri.parse("http://www.trinea.cn/")))
+                .setIcon(Icon.createWithBitmap(drawableToBitmap(packageInfo.applicationInfo.loadIcon(packageManager))))
+                .setShortLabel(appName).setLongLabel(appName)
+                .build();
+            shortcutInfos.add(shortcutInfo);
+          } catch (Exception e) {
+
+          }
+        }
+        shortcutManager.setDynamicShortcuts(shortcutInfos);
+      }
+    }
+  }
+
+  public static Bitmap drawableToBitmap(Drawable drawable) {
+    Bitmap bitmap = Bitmap.createBitmap(
+        drawable.getIntrinsicWidth(),
+        drawable.getIntrinsicHeight(),
+        drawable.getOpacity() != PixelFormat.OPAQUE ? Bitmap.Config.ARGB_8888
+            : Bitmap.Config.RGB_565);
+    Canvas canvas = new Canvas(bitmap);
+    drawable.setBounds(0, 0, drawable.getIntrinsicWidth(), drawable.getIntrinsicHeight());
+    drawable.draw(canvas);
+    return bitmap;
   }
 
   @Override

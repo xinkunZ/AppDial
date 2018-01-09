@@ -49,6 +49,9 @@ public class LocalApp implements Serializable, Comparable<LocalApp> {
   public int compareTo(@NonNull LocalApp another) {
     if (getCount() != another.getCount()) {
       return getCount() - another.getCount();//常用的排前面
+    } else if (getPinyin().length() != another.getPinyin().length()) {
+      //长度不同的 短的在前
+      return another.getPinyin().length() - getPinyin().length();
     } else {
       return another.getPinyin().compareTo(getPinyin());//字母序
     }

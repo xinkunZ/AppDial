@@ -61,21 +61,6 @@ public class MainActivity extends Activity implements ThreadHelper.ThreadHeplerU
     setContentView(R.layout.activity_main);
     createEventHandlers();
     initAppList();
-    createShortcuts();
-  }
-
-  private void createShortcuts() {
-    ShortcutManager shortcutManager = null;
-    if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.N_MR1) {
-      shortcutManager = getSystemService(ShortcutManager.class);
-      ShortcutInfo webShortcut = new ShortcutInfo.Builder(this, "shortcut_web")
-          .setShortLabel("github")
-          .setLongLabel("Open Tonny's github web site")
-          .setIcon(Icon.createWithResource(this, R.drawable.ic_sync_black_24dp))
-          .setIntent(new Intent(Intent.ACTION_VIEW, Uri.parse("https://marktony.github.io")))
-          .build();
-      shortcutManager.addDynamicShortcuts(Collections.singletonList(webShortcut));
-    }
   }
 
   private void createEventHandlers() {
@@ -121,14 +106,17 @@ public class MainActivity extends Activity implements ThreadHelper.ThreadHeplerU
             LocalApp app = apps.get(i);
             PackageManager packageManager = getPackageManager();
             PackageInfo packageInfo = packageManager.getPackageInfo(app.getPackageName(), 0);
-            CharSequence appName = packageInfo.applicationInfo.loadLabel(packageManager);
-            ShortcutInfo shortcutInfo = new ShortcutInfo.Builder(this,
-                appName.toString())//
-                .setIntent(new Intent(Intent.ACTION_VIEW, Uri.parse("http://www.trinea.cn/")))
-                .setIcon(Icon.createWithBitmap(drawableToBitmap(packageInfo.applicationInfo.loadIcon(packageManager))))
-                .setShortLabel(appName).setLongLabel(appName)
-                .build();
-            shortcutInfos.add(shortcutInfo);
+            Intent intent = packageManager.getLaunchIntentForPackage(packageInfo.packageName);
+            if (intent != null) {
+              CharSequence appName = packageInfo.applicationInfo.loadLabel(packageManager);
+              ShortcutInfo shortcutInfo = new ShortcutInfo.Builder(this,
+                  packageInfo.packageName)//
+                  .setIntent(intent)
+                  .setIcon(Icon.createWithBitmap(drawableToBitmap(packageInfo.applicationInfo.loadIcon(packageManager))))
+                  .setShortLabel(appName).setLongLabel(appName)
+                  .build();
+              shortcutInfos.add(shortcutInfo);
+            }
           } catch (Exception e) {
 
           }
@@ -239,6 +227,7 @@ public class MainActivity extends Activity implements ThreadHelper.ThreadHeplerU
         lastApps.addAll(appInfos);
       });
     });
+
   }
 
   public void miniDial(View view) {

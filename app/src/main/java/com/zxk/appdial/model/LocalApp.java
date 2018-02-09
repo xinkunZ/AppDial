@@ -3,7 +3,6 @@ package com.zxk.appdial.model;
 import java.io.Serializable;
 
 import android.graphics.drawable.Drawable;
-import android.support.annotation.NonNull;
 
 /**
  * @author zhangxinkun
@@ -46,8 +45,10 @@ public class LocalApp implements Serializable, Comparable<LocalApp> {
   }
 
   @Override
-  public int compareTo(@NonNull LocalApp another) {
-    if (getCount() != another.getCount()) {
+  public int compareTo(LocalApp another) {
+    if (another == null) {
+      return -1;
+    } else if (getCount() != another.getCount()) {
       return getCount() - another.getCount();//常用的排前面
     } else if (getPinyin().length() != another.getPinyin().length()) {
       //长度不同的 短的在前

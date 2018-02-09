@@ -74,7 +74,7 @@ public class CountHelper {
       }
       Collections.sort(apps, (o1, o2) -> o1.getCount() - o2.getCount());
       Collections.reverse(apps);
-      return apps.subList(0, 4);
+      return apps.size() >= 4 ? apps.subList(0, 4) : apps;
     } catch (Exception e) {
       return null;
     }

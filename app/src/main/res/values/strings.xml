@@ -18,5 +18,7 @@
 	<string name="appInfo">App info</string>
 	<string name="uninstall">uninstall</string>
 	<string name="operation">operation</string>
+	<string name="notCalac">I\'m shy</string>
+	<string name="calac">I\'m not shy</string>
 
 </resources>

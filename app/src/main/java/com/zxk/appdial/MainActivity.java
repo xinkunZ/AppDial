@@ -33,6 +33,7 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.TextView;
+
 import com.google.firebase.analytics.FirebaseAnalytics;
 import com.t9search.model.PinyinSearchUnit;
 import com.t9search.util.PinyinUtil;
@@ -60,7 +61,7 @@ public class MainActivity extends Activity implements ThreadHelper.ThreadHeplerU
     super.onCreate(savedInstanceState);
     setContentView(R.layout.activity_main);
     createEventHandlers();
-    initAppList();
+    initAppList(false);
   }
 
   private void createEventHandlers() {
@@ -73,7 +74,7 @@ public class MainActivity extends Activity implements ThreadHelper.ThreadHeplerU
     apppsListView = findViewById(R.id.appList);
     numberTextView = findViewById(R.id.numberTextView);
     appHelper = new AppHelper(getPackageManager(), this);
-    countHelper = new CountHelper();
+    countHelper = new CountHelper(this);
     listViewAdapter = new ListViewAdapter();
     fuckOPPO();
     apppsListView.setAdapter(listViewAdapter);
@@ -83,8 +84,10 @@ public class MainActivity extends Activity implements ThreadHelper.ThreadHeplerU
       bundle.putString(FirebaseAnalytics.Param.CONTENT_TYPE, Build.MODEL);
       bundle.putString(FirebaseAnalytics.Param.ITEM_ID, item.getAppName());
       firebaseAnalytics.logEvent(FirebaseAnalytics.Event.SELECT_CONTENT, bundle);
-      item.setCount(item.getCount() + 1);
-      countHelper.recordAppCount(item.getPackageName(), item.getCount(), MainActivity.this);
+      if (item.isInCount()) {
+        item.setCount(item.getCount() + 1);
+        countHelper.recordAppCount(item.getPackageName(), item.getCount(), MainActivity.this);
+      }
       updateShortcuts();
       PackageManager packageManager = getPackageManager();
       Intent intent = packageManager.getLaunchIntentForPackage(item.getPackageName());
@@ -96,7 +99,7 @@ public class MainActivity extends Activity implements ThreadHelper.ThreadHeplerU
 
   private void updateShortcuts() {
     if (shortcutManager != null && Build.VERSION.SDK_INT >= Build.VERSION_CODES.N_MR1) {
-      List<LocalApp> apps = countHelper.getFirstFour4ShortcutsApp(this);
+      List<LocalApp> apps = countHelper.getFrequentApps4ShortcutsApp(this);
       List<ShortcutInfo> shortcutInfos = new ArrayList<>();
       if (apps != null) {
         int max = shortcutManager.getMaxShortcutCountPerActivity();
@@ -112,7 +115,8 @@ public class MainActivity extends Activity implements ThreadHelper.ThreadHeplerU
               ShortcutInfo shortcutInfo = new ShortcutInfo.Builder(this,
                   packageInfo.packageName)//
                   .setIntent(intent)
-                  .setIcon(Icon.createWithBitmap(drawableToBitmap(packageInfo.applicationInfo.loadIcon(packageManager))))
+                  .setIcon(
+                      Icon.createWithBitmap(drawableToBitmap(packageInfo.applicationInfo.loadIcon(packageManager))))
                   .setShortLabel(appName).setLongLabel(appName)
                   .build();
               shortcutInfos.add(shortcutInfo);
@@ -141,8 +145,15 @@ public class MainActivity extends Activity implements ThreadHelper.ThreadHeplerU
   @Override
   public void onCreateContextMenu(ContextMenu menu, View v, ContextMenu.ContextMenuInfo menuInfo) {
     menu.setHeaderTitle(R.string.operation);
-    menu.add(0, ((AdapterView.AdapterContextMenuInfo) menuInfo).position, Menu.NONE, R.string.appInfo);
-    menu.add(0, ((AdapterView.AdapterContextMenuInfo) menuInfo).position, Menu.NONE, R.string.uninstall);
+    int position = ((AdapterView.AdapterContextMenuInfo) menuInfo).position;
+    menu.add(0, position, Menu.NONE, R.string.appInfo);
+    menu.add(0, position, Menu.NONE, R.string.uninstall);
+    LocalApp item = (LocalApp) apppsListView.getItemAtPosition(position);
+    if (item.isInCount()) {
+      menu.add(0, position, Menu.NONE, R.string.notCalac);
+    } else {
+      menu.add(0, position, Menu.NONE, R.string.calac);
+    }
   }
 
   @Override
@@ -154,6 +165,18 @@ public class MainActivity extends Activity implements ThreadHelper.ThreadHeplerU
       intent.setAction(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
       intent.setData(Uri.fromParts("package", selectedApp.getPackageName(), null));
       startActivity(intent);
+    } else if (getString(R.string.notCalac).equals(item.getTitle())) {
+      new Thread(() -> {
+        countHelper.changeCountState(selectedApp.getPackageName(), this, false);
+        initAppList(true);
+        searchAndLoadToUI(false);
+      }).start();
+    } else if (getString(R.string.calac).equals(item.getTitle())) {
+      new Thread(() -> {
+        countHelper.changeCountState(selectedApp.getPackageName(), this, true);
+        initAppList(true);
+        searchAndLoadToUI(false);
+      }).start();
     } else {
       Uri uri = Uri.parse("package:" + selectedApp.getPackageName());
       Intent intent = new Intent(Intent.ACTION_DELETE, uri);
@@ -164,36 +187,44 @@ public class MainActivity extends Activity implements ThreadHelper.ThreadHeplerU
 
   private void fuckOPPO() {
     //辣鸡oppo需要手动指定id创建事件
-    LinearLayout view = (LinearLayout) findViewById(R.id.lineOne);
+    LinearLayout view = findViewById(R.id.lineOne);
     for (int i = 0; i < view.getChildCount(); i++) {
       View childAt = view.getChildAt(i);
       if (childAt instanceof MyButton) {
         childAt.setOnClickListener(this::clickButton);
       }
     }
-    view = (LinearLayout) findViewById(R.id.lineTwo);
+    view = findViewById(R.id.lineTwo);
     for (int i = 0; i < view.getChildCount(); i++) {
       View childAt = view.getChildAt(i);
       if (childAt instanceof MyButton) {
         childAt.setOnClickListener(this::clickButton);
       }
     }
-    view = (LinearLayout) findViewById(R.id.lineThree);
+    view = findViewById(R.id.lineThree);
     for (int i = 0; i < view.getChildCount(); i++) {
       View childAt = view.getChildAt(i);
       if (childAt instanceof MyButton) {
         childAt.setOnClickListener(this::clickButton);
       }
     }
-    MyButton buttonV = (MyButton) findViewById(R.id.buttonv);
+    MyButton buttonV = findViewById(R.id.buttonv);
     buttonV.setOnClickListener(this::miniDial);
 
-    MyButton button0 = (MyButton) findViewById(R.id.button0);
+    MyButton button0 = findViewById(R.id.button0);
     button0.setOnClickListener(this::clickButton);
 
-    MyButton buttonC = (MyButton) findViewById(R.id.buttonc);
+    MyButton buttonC = findViewById(R.id.buttonc);
     buttonC.setOnClickListener(this::clickButton);
     //垃圾oppo结束
+
+    buttonC.setOnLongClickListener(this::clearText);
+  }
+
+  private boolean clearText(View view) {
+    searchText.setLength(0);
+    searchAndLoadToUI(false);
+    return true;
   }
 
   @Override
@@ -216,18 +247,19 @@ public class MainActivity extends Activity implements ThreadHelper.ThreadHeplerU
 
   private volatile static List<LocalApp> filter = Collections.synchronizedList(new ArrayList<LocalApp>());
 
-  private void initAppList() {
-    mHandler.post(() -> {
-      //扫描得到APP列表
-      if (appInfos == null) {
-        appInfos = appHelper.scanLocalInstallAppList();
-      }
-      mHandler.post(() -> {
-        listViewAdapter.setData(appInfos);
-        lastApps.addAll(appInfos);
-      });
-    });
+  private void initAppList(boolean reload) {
+    //扫描得到APP列表
+    if (reload) {
+      appInfos = null;
+    }
 
+    if (appInfos == null) {
+      appInfos = appHelper.scanLocalInstallAppList(reload);
+    }
+    mHandler.post(() -> {
+      listViewAdapter.setData(appInfos);
+      lastApps.addAll(appInfos);
+    });
   }
 
   public void miniDial(View view) {
@@ -254,7 +286,7 @@ public class MainActivity extends Activity implements ThreadHelper.ThreadHeplerU
 
   }
 
-  private StringBuilder string = new StringBuilder();
+  private StringBuilder searchText = new StringBuilder();
 
   public void clickButton(View view) {
     if (view instanceof Button) {
@@ -263,14 +295,14 @@ public class MainActivity extends Activity implements ThreadHelper.ThreadHeplerU
       if (!isFunc(view)) {
         CharSequence text = ((Button) view).getText();
         if (getResources().getString(R.string.button_delete).equals(text)) {
-          String s = string.toString();
+          String s = searchText.toString();
           if (s.length() > 0) {
             delete = true;
-            string.setLength(0);
-            string.append(s.substring(0, s.length() - 1));
+            searchText.setLength(0);
+            searchText.append(s.substring(0, s.length() - 1));
           }
         } else {
-          string.append(text);
+          searchText.append(text);
         }
         final boolean finalDelete = delete;
         searchAndLoadToUI(finalDelete);
@@ -280,14 +312,14 @@ public class MainActivity extends Activity implements ThreadHelper.ThreadHeplerU
 
   private void searchAndLoadToUI(final boolean isDelete) {
     mHandler.post(() -> {
-      numberTextView.setText(string.toString());
+      numberTextView.setText(searchText.toString());
       t9Filter(isDelete);
     });
   }
 
   private void t9Filter(boolean delete) {
     filter.clear();
-    if (string.toString().isEmpty()) {
+    if (searchText.toString().isEmpty()) {
       //为空则展示全部
       filter = new ArrayList<>();
       filter.addAll(appInfos);
@@ -309,7 +341,7 @@ public class MainActivity extends Activity implements ThreadHelper.ThreadHeplerU
       PinyinSearchUnit unit = new PinyinSearchUnit();
       unit.setBaseData(localApp.getAppName());
       PinyinUtil.parse(unit);
-      if (T9Util.match(unit, string.toString())) {
+      if (T9Util.match(unit, searchText.toString())) {
         newList.add(localApp);
       }
     }
@@ -366,8 +398,8 @@ public class MainActivity extends Activity implements ThreadHelper.ThreadHeplerU
       if (convertView == null) {
         mViewHolder = new ViewHolder();
         view = LayoutInflater.from(getBaseContext()).inflate(R.layout.activity_list_item, parent, false);
-        mViewHolder.iv_app_icon = (ImageView) view.findViewById(R.id.appIcon);
-        mViewHolder.tx_app_name = (TextView) view.findViewById(R.id.appName);
+        mViewHolder.iv_app_icon = view.findViewById(R.id.appIcon);
+        mViewHolder.tx_app_name = view.findViewById(R.id.appName);
         view.setTag(mViewHolder);
       } else {
         view = convertView;

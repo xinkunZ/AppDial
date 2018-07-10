@@ -2,20 +2,23 @@ package com.zxk.appdial.utils;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 
+import net.sourceforge.pinyin4j.PinyinHelper;
+import net.sourceforge.pinyin4j.format.HanyuPinyinCaseType;
+import net.sourceforge.pinyin4j.format.HanyuPinyinOutputFormat;
+import net.sourceforge.pinyin4j.format.HanyuPinyinToneType;
 import android.app.Activity;
 import android.content.Intent;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.util.Log;
+
 import com.zxk.appdial.model.LocalApp;
-import net.sourceforge.pinyin4j.PinyinHelper;
-import net.sourceforge.pinyin4j.format.HanyuPinyinCaseType;
-import net.sourceforge.pinyin4j.format.HanyuPinyinOutputFormat;
-import net.sourceforge.pinyin4j.format.HanyuPinyinToneType;
 
 /**
+ * 伟大的app管理君
  *
  * @author zhangxinkun
  */
@@ -29,11 +32,14 @@ public class AppHelper implements ThreadHelper.ThreadHeplerUser<PackageInfo> {
 
   public AppHelper(PackageManager packageManager, Activity mainActivity) {
     this.packageManager = packageManager;
-    this.countHelper = new CountHelper();
+    this.countHelper = new CountHelper(mainActivity);
     this.mainActivity = mainActivity;
   }
 
-  public List<LocalApp> scanLocalInstallAppList() {
+  public List<LocalApp> scanLocalInstallAppList(boolean reload) {
+    if(reload) {
+      apps = null;
+    }
     if (apps != null) {
       return apps;
     }
@@ -43,6 +49,12 @@ public class AppHelper implements ThreadHelper.ThreadHeplerUser<PackageInfo> {
       new ThreadHelper<>(packageInfos, this, 16).exe();//多开点线程
     } catch (RuntimeException e) {
       e.printStackTrace();
+    }
+    Iterator<LocalApp> iterator = apps.iterator();
+    while (iterator.hasNext()) {
+      if (iterator.next() == null) {
+        iterator.remove();
+      }
     }
     Collections.sort(apps);
     Collections.reverse(apps);
@@ -65,6 +77,7 @@ public class AppHelper implements ThreadHelper.ThreadHeplerUser<PackageInfo> {
       myAppInfo.setClassName(packageInfo.applicationInfo.className);
       myAppInfo.setPinyin(getPinyin(myAppInfo.getAppName(), myAppInfo.getPackageName()));
       myAppInfo.setCount(countHelper.getCount(mainActivity, myAppInfo.getPackageName()));
+      myAppInfo.setInCount(!countHelper.isUnCount(mainActivity, myAppInfo.getPackageName()));
       if (packageInfo.applicationInfo.loadIcon(packageManager) == null) {
         continue;
       }

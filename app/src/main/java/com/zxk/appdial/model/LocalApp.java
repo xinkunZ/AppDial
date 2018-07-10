@@ -5,6 +5,8 @@ import java.io.Serializable;
 import android.graphics.drawable.Drawable;
 
 /**
+ * 一个卑微的app
+ *
  * @author zhangxinkun
  */
 public class LocalApp implements Serializable, Comparable<LocalApp> {
@@ -17,6 +19,7 @@ public class LocalApp implements Serializable, Comparable<LocalApp> {
   private String simpleChn;
   private String pinyin;
   private int count = 0;
+  private boolean inCount = true;
 
   @Override
   public String toString() {
@@ -112,5 +115,13 @@ public class LocalApp implements Serializable, Comparable<LocalApp> {
 
   public void setPinyin(String pinyin) {
     this.pinyin = pinyin;
+  }
+
+  public boolean isInCount() {
+    return inCount;
+  }
+
+  public void setInCount(boolean inCount) {
+    this.inCount = inCount;
   }
 }

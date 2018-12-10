@@ -112,12 +112,12 @@ public class MainActivity extends Activity implements ThreadHelper.ThreadHeplerU
             Intent intent = packageManager.getLaunchIntentForPackage(packageInfo.packageName);
             if (intent != null) {
               CharSequence appName = packageInfo.applicationInfo.loadLabel(packageManager);
-              ShortcutInfo shortcutInfo = new ShortcutInfo.Builder(this,
-                  packageInfo.packageName)//
+              ShortcutInfo shortcutInfo = new ShortcutInfo.Builder(this, packageInfo.packageName)
+                  //
                   .setIntent(intent)
                   .setIcon(
-                      Icon.createWithBitmap(drawableToBitmap(packageInfo.applicationInfo.loadIcon(packageManager))))
-                  .setShortLabel(appName).setLongLabel(appName)
+                      Icon.createWithBitmap(drawableToBitmap(packageInfo.applicationInfo
+                          .loadIcon(packageManager)))).setShortLabel(appName).setLongLabel(appName)
                   .build();
               shortcutInfos.add(shortcutInfo);
             }
@@ -131,8 +131,7 @@ public class MainActivity extends Activity implements ThreadHelper.ThreadHeplerU
   }
 
   public static Bitmap drawableToBitmap(Drawable drawable) {
-    Bitmap bitmap = Bitmap.createBitmap(
-        drawable.getIntrinsicWidth(),
+    Bitmap bitmap = Bitmap.createBitmap(drawable.getIntrinsicWidth(),
         drawable.getIntrinsicHeight(),
         drawable.getOpacity() != PixelFormat.OPAQUE ? Bitmap.Config.ARGB_8888
             : Bitmap.Config.RGB_565);
@@ -186,7 +185,7 @@ public class MainActivity extends Activity implements ThreadHelper.ThreadHeplerU
   }
 
   private void fuckOPPO() {
-    //辣鸡oppo需要手动指定id创建事件
+    // 辣鸡oppo需要手动指定id创建事件
     LinearLayout view = findViewById(R.id.lineOne);
     for (int i = 0; i < view.getChildCount(); i++) {
       View childAt = view.getChildAt(i);
@@ -216,7 +215,7 @@ public class MainActivity extends Activity implements ThreadHelper.ThreadHeplerU
 
     MyButton buttonC = findViewById(R.id.buttonc);
     buttonC.setOnClickListener(this::clickButton);
-    //垃圾oppo结束
+    // 垃圾oppo结束
 
     buttonC.setOnLongClickListener(this::clearText);
   }
@@ -245,10 +244,11 @@ public class MainActivity extends Activity implements ThreadHelper.ThreadHeplerU
 
   private static List<LocalApp> lastApps = new ArrayList<>();
 
-  private volatile static List<LocalApp> filter = Collections.synchronizedList(new ArrayList<LocalApp>());
+  private volatile static List<LocalApp> filter = Collections
+      .synchronizedList(new ArrayList<LocalApp>());
 
   private void initAppList(boolean reload) {
-    //扫描得到APP列表
+    // 扫描得到APP列表
     if (reload) {
       appInfos = null;
     }
@@ -320,13 +320,13 @@ public class MainActivity extends Activity implements ThreadHelper.ThreadHeplerU
   private void t9Filter(boolean delete) {
     filter.clear();
     if (searchText.toString().isEmpty()) {
-      //为空则展示全部
+      // 为空则展示全部
       filter = new ArrayList<>();
       filter.addAll(appInfos);
       afterRun();
     } else {
       if (delete) {
-        //退格 重查 后续考虑加入上上笔搜索结果直接获取
+        // 退格 重查 后续考虑加入上上笔搜索结果直接获取
         lastApps = new ArrayList<>();
         lastApps.addAll(appInfos);
       }
@@ -375,7 +375,6 @@ public class MainActivity extends Activity implements ThreadHelper.ThreadHeplerU
     private List<LocalApp> data = new ArrayList<>();
 
     @Override
-
     public int getCount() {
       return data == null ? 0 : data.size();
     }
@@ -397,7 +396,8 @@ public class MainActivity extends Activity implements ThreadHelper.ThreadHeplerU
       View view;
       if (convertView == null) {
         mViewHolder = new ViewHolder();
-        view = LayoutInflater.from(getBaseContext()).inflate(R.layout.activity_list_item, parent, false);
+        view = LayoutInflater.from(getBaseContext()).inflate(R.layout.activity_list_item, parent,
+            false);
         mViewHolder.iv_app_icon = view.findViewById(R.id.appIcon);
         mViewHolder.tx_app_name = view.findViewById(R.id.appName);
         view.setTag(mViewHolder);

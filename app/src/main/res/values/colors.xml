@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-	<drawable name="select">#e84848</drawable>
-	<drawable name="unselect">#88000000</drawable>
+  <drawable name="select">#e84848</drawable>
+  <drawable name="unselect">#88000000</drawable>
 </resources>

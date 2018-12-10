@@ -8,6 +8,7 @@ import android.graphics.Paint;
 import android.util.AttributeSet;
 import android.util.TypedValue;
 import android.widget.Button;
+
 import com.zxk.appdial.R;
 
 /**
@@ -35,7 +36,7 @@ public class MyButton extends Button {
 
   public MyButton(Context context, AttributeSet attrs) {
     super(context, attrs);
-    //获取自定义的属性
+    // 获取自定义的属性
     TypedArray ta = context.obtainStyledAttributes(attrs, R.styleable.buttonText);
     chars = ta.getString(R.styleable.buttonText_t9Chars);
     num = ta.getString(R.styleable.buttonText_num);
@@ -46,8 +47,10 @@ public class MyButton extends Button {
   protected void onDraw(Canvas canvas) {
     super.onDraw(canvas);
     Paint paint = new Paint();
-    float line1 = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_SP, 30, getResources().getDisplayMetrics());
-    float line2 = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_SP, 19, getResources().getDisplayMetrics());
+    float line1 = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_SP, 30, getResources()
+        .getDisplayMetrics());
+    float line2 = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_SP, 19, getResources()
+        .getDisplayMetrics());
 
     paint.setTextSize(line1);
     paint.setColor(Color.WHITE);

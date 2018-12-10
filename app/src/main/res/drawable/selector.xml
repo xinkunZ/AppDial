@@ -1,22 +1,20 @@
 <?xml version="1.0" encoding="utf-8"?>
 <selector xmlns:android="http://schemas.android.com/apk/res/android">
-	<!--focus时不应该直接看出来-->
-	<item android:state_pressed="false"
-		android:drawable="@android:color/transparent" />
-	<item android:state_pressed="true"
-		android:drawable="@drawable/select" />
-	<item android:drawable="@android:color/transparent" />
+  <!--focus时不应该直接看出来-->
+  <item android:state_pressed="false" android:drawable="@android:color/transparent" />
+  <item android:state_pressed="true" android:drawable="@drawable/select" />
+  <item android:drawable="@android:color/transparent" />
 
-	<item android:state_window_focused="false">
-		<shape android:shape="rectangle">
-			<corners android:radius="0dp" />
-			<solid android:color="@android:color/transparent" />
-		</shape>
-	</item>
-	<item android:state_pressed="true">
-		<shape android:shape="rectangle">
-			<corners android:radius="0dp" />
-			<solid android:drawable="@drawable/select" />
-		</shape>
-	</item>
+  <item android:state_window_focused="false">
+    <shape android:shape="rectangle">
+      <corners android:radius="0dp" />
+      <solid android:color="@android:color/transparent" />
+    </shape>
+  </item>
+  <item android:state_pressed="true">
+    <shape android:shape="rectangle">
+      <corners android:radius="0dp" />
+      <solid android:drawable="@drawable/select" />
+    </shape>
+  </item>
 </selector>

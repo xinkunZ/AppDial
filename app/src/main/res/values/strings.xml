@@ -1,24 +1,24 @@
 <resources>
-	<string name="app_name">App Summoner</string>
+  <string name="app_name">App Summoner</string>
 
-	<string name="button_1">1</string>
-	<string name="button_2">2</string>
-	<string name="button_3">3</string>
-	<string name="button_4">4</string>
-	<string name="button_5">5</string>
-	<string name="button_6">6</string>
-	<string name="button_7">7</string>
-	<string name="button_8">8</string>
-	<string name="button_9">9</string>
-	<string name="button_miniSize">v</string>
-	<string name="button_maxSize">^</string>
-	<string name="button_0">0</string>
-	<string name="button_delete">c</string>
+  <string name="button_1">1</string>
+  <string name="button_2">2</string>
+  <string name="button_3">3</string>
+  <string name="button_4">4</string>
+  <string name="button_5">5</string>
+  <string name="button_6">6</string>
+  <string name="button_7">7</string>
+  <string name="button_8">8</string>
+  <string name="button_9">9</string>
+  <string name="button_miniSize">v</string>
+  <string name="button_maxSize">^</string>
+  <string name="button_0">0</string>
+  <string name="button_delete">c</string>
 
-	<string name="appInfo">App info</string>
-	<string name="uninstall">uninstall</string>
-	<string name="operation">operation</string>
-	<string name="notCalac">I\'m shy</string>
-	<string name="calac">I\'m not shy</string>
+  <string name="appInfo">App info</string>
+  <string name="uninstall">uninstall</string>
+  <string name="operation">operation</string>
+  <string name="notCalac">I\'m shy</string>
+  <string name="calac">I\'m not shy</string>
 
 </resources>

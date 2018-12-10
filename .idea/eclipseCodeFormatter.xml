@@ -4,6 +4,8 @@
     <option name="projectSpecificProfile">
       <ProjectSpecificProfile>
         <option name="formatter" value="ECLIPSE" />
+        <option name="pathToConfigFileJava" value="C:/java/rumba-format.xml" />
+        <option name="selectedJavaProfile" value="rumba format" />
       </ProjectSpecificProfile>
     </option>
     <option name="selectedGlobalProfile">

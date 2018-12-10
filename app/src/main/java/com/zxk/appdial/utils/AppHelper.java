@@ -37,7 +37,7 @@ public class AppHelper implements ThreadHelper.ThreadHeplerUser<PackageInfo> {
   }
 
   public List<LocalApp> scanLocalInstallAppList(boolean reload) {
-    if(reload) {
+    if (reload) {
       apps = null;
     }
     if (apps != null) {
@@ -46,7 +46,7 @@ public class AppHelper implements ThreadHelper.ThreadHeplerUser<PackageInfo> {
     apps = new ArrayList<>();
     try {
       List<PackageInfo> packageInfos = packageManager.getInstalledPackages(0);
-      new ThreadHelper<>(packageInfos, this, 16).exe();//多开点线程
+      new ThreadHelper<>(packageInfos, this, 16).exe();// 多开点线程
     } catch (RuntimeException e) {
       e.printStackTrace();
     }
@@ -66,7 +66,7 @@ public class AppHelper implements ThreadHelper.ThreadHeplerUser<PackageInfo> {
     Log.d(AppHelper.class.getName(), "遍历内容： " + list.toString());
     for (int i = 0; i < list.size(); i++) {
       PackageInfo packageInfo = list.get(i);
-      //过滤不能打开的app
+      // 过滤不能打开的app
       Intent intent = packageManager.getLaunchIntentForPackage(packageInfo.packageName);
       if (intent == null) {
         continue;
@@ -113,5 +113,3 @@ public class AppHelper implements ThreadHelper.ThreadHeplerUser<PackageInfo> {
   }
 
 }
-
-

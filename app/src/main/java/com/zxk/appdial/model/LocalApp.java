@@ -37,7 +37,8 @@ public class LocalApp implements Serializable, Comparable<LocalApp> {
 
     if (appName != null ? !appName.equals(localApp.appName) : localApp.appName != null)
       return false;
-    return packageName != null ? packageName.equals(localApp.packageName) : localApp.packageName == null;
+    return packageName != null ? packageName.equals(localApp.packageName)
+        : localApp.packageName == null;
   }
 
   @Override
@@ -52,12 +53,12 @@ public class LocalApp implements Serializable, Comparable<LocalApp> {
     if (another == null) {
       return -1;
     } else if (getCount() != another.getCount()) {
-      return getCount() - another.getCount();//常用的排前面
+      return getCount() - another.getCount();// 常用的排前面
     } else if (getPinyin().length() != another.getPinyin().length()) {
-      //长度不同的 短的在前
+      // 长度不同的 短的在前
       return another.getPinyin().length() - getPinyin().length();
     } else {
-      return another.getPinyin().compareTo(getPinyin());//字母序
+      return another.getPinyin().compareTo(getPinyin());// 字母序
     }
   }
 

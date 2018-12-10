@@ -25,10 +25,10 @@ import com.zxk.appdial.model.LocalApp;
  */
 public class CountHelper {
 
-  //properties
+  // properties
   private String countFileName = "appCountCache";
 
-  //normal text
+  // normal text
   private String unCountFileName = "shyApps";
 
   public CountHelper(Activity activity) {
@@ -37,13 +37,15 @@ public class CountHelper {
       List<String> files = new ArrayList<>();
       files.addAll(Arrays.asList(fileList));
       if (!files.contains(countFileName)) {
-        FileOutputStream outputStream = activity.openFileOutput(countFileName, Context.MODE_PRIVATE);
+        FileOutputStream outputStream = activity
+            .openFileOutput(countFileName, Context.MODE_PRIVATE);
         Properties properties = new Properties();
         properties.store(outputStream, "");
         outputStream.flush();
         outputStream.close();
       } else if (!files.contains(unCountFileName)) {
-        FileOutputStream outputStream = activity.openFileOutput(unCountFileName, Context.MODE_PRIVATE);
+        FileOutputStream outputStream = activity.openFileOutput(unCountFileName,
+            Context.MODE_PRIVATE);
         outputStream.write("\n".getBytes());
         outputStream.flush();
         outputStream.close();
@@ -53,7 +55,8 @@ public class CountHelper {
     }
   }
 
-  private String readFile(Activity activity, String fileName) throws FileNotFoundException, IOException {
+  private String readFile(Activity activity, String fileName) throws FileNotFoundException,
+      IOException {
     FileInputStream inputStream = null;
     inputStream = activity.openFileInput(fileName);
     BufferedInputStream stream = new BufferedInputStream(inputStream, 128);
@@ -96,7 +99,8 @@ public class CountHelper {
           }
         }
 
-        FileOutputStream outputStream = activity.openFileOutput(unCountFileName, Context.MODE_PRIVATE);
+        FileOutputStream outputStream = activity.openFileOutput(unCountFileName,
+            Context.MODE_PRIVATE);
         outputStream.write(sb.toString().getBytes());
       } catch (FileNotFoundException e) {
 
@@ -111,8 +115,8 @@ public class CountHelper {
   public boolean isUnCount(Activity activity, String appPackageName) {
     try {
       String stringBuilder = readFile(activity, unCountFileName);
-      return !stringBuilder.isEmpty() && Arrays.asList(stringBuilder.split("\n"))
-          .contains(appPackageName);
+      return !stringBuilder.isEmpty()
+          && Arrays.asList(stringBuilder.split("\n")).contains(appPackageName);
     } catch (Exception e) {
       System.err.println(e);
       return false;

@@ -13,39 +13,37 @@ import java.util.concurrent.CountDownLatch;
 public class ThreadHelper<T> {
 
   private List<T> list;
-  private int threadSize = 20;
+
+  private int coutPerThread;
   private CountDownLatch countDownLatch;
 
   private ThreadHeplerUser<T> user;
 
-  public ThreadHelper(List<T> list, ThreadHeplerUser<T> user) {
-    this(list, user, 20);
-  }
-
-  public ThreadHelper(List<T> list, ThreadHeplerUser<T> user, int threadSize) {
+  public ThreadHelper(List<T> list, ThreadHeplerUser<T> user, int coutPerThread) {
     this.list = list;
     this.user = user;
-    this.threadSize = threadSize;
+    this.coutPerThread = coutPerThread;
   }
 
   public void exe() {
     int size = list.size();
     if (size > 50) {
 
-      int count = size / threadSize;
+      int count = size / coutPerThread;
       boolean haveTail = false;
-      if (count * threadSize != size) {
+      if (count * coutPerThread != size) {
         haveTail = true;
       }
       countDownLatch = new CountDownLatch(count + (haveTail ? 1 : 0));
       for (int i = 0; i < count; i++) {
-        System.out.println(String.format("从%s ~ %s ", i * threadSize, i * threadSize + threadSize));
-        List<T> l = list.subList(i * threadSize, i * threadSize + threadSize);
+        System.out.println(String.format("从%s ~ %s ", i * coutPerThread, i * coutPerThread
+            + coutPerThread));
+        List<T> l = list.subList(i * coutPerThread, i * coutPerThread + coutPerThread);
         new Worker(l).start();
       }
       if (haveTail) {
-        System.out.println(String.format("尾巴 %s ~ %s ", count * threadSize - 1, size - 1));
-        List<T> latest = list.subList(count * threadSize - 1, size - 1);
+        System.out.println(String.format("尾巴 %s ~ %s ", count * coutPerThread - 1, size - 1));
+        List<T> latest = list.subList(count * coutPerThread - 1, size - 1);
         new Worker(latest).start();
       }
     } else {

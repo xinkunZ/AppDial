@@ -1,19 +1,23 @@
 package com.zxk.appdial.utils;
 
-import java.io.BufferedInputStream;
 import java.io.Closeable;
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
 
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.json.JSONObject;
+
 import android.app.Activity;
-import android.content.Context;
 import android.util.Log;
 
 import com.zxk.appdial.model.LocalApp;
@@ -26,111 +30,127 @@ import com.zxk.appdial.model.LocalApp;
 public class CountHelper {
 
   // properties
-  private String countFileName = "appCountCache";
+  private String FILE_COUNT = "appCountCache";
 
   // normal text
-  private String unCountFileName = "shyApps";
+  private String FILE_UNCOUNT = "shyApps";
+
+  // properties
+  private String File_APP_NAME = "appname";
+
+  private Activity activity;
+  private JSONObject cachedPackageNameMap = new JSONObject();
+
+  private File cacheDir;
+  private List<String> uncountApps = new ArrayList<>();
+
+  public JSONObject getCachedPackageNameMap() {
+    return cachedPackageNameMap;
+  }
 
   public CountHelper(Activity activity) {
     try {
-      String[] fileList = activity.fileList();
-      List<String> files = new ArrayList<>();
-      files.addAll(Arrays.asList(fileList));
-      if (!files.contains(countFileName)) {
-        FileOutputStream outputStream = activity
-            .openFileOutput(countFileName, Context.MODE_PRIVATE);
-        Properties properties = new Properties();
-        properties.store(outputStream, "");
-        outputStream.flush();
-        outputStream.close();
-      } else if (!files.contains(unCountFileName)) {
-        FileOutputStream outputStream = activity.openFileOutput(unCountFileName,
-            Context.MODE_PRIVATE);
-        outputStream.write("\n".getBytes());
-        outputStream.flush();
-        outputStream.close();
+      this.activity = activity;
+      cacheDir = new File(activity.getExternalCacheDir().getParentFile(), "count");
+      if (!cacheDir.exists()) {
+        cacheDir.mkdirs();
       }
-    } catch (Exception e) {
+      File countFile = new File(cacheDir, FILE_COUNT);
+      if (!countFile.exists()) {
+        countFile.createNewFile();
+        recoverOldData();
+      }
 
+      File unCountFile = new File(cacheDir, FILE_UNCOUNT);
+      if (!unCountFile.exists()) {
+        unCountFile.createNewFile();
+        recoverOldData();
+      }
+      File pakcageNameMapFile = new File(cacheDir, File_APP_NAME);
+      if (!pakcageNameMapFile.exists()) {
+        pakcageNameMapFile.createNewFile();
+      } else {
+        cachedPackageNameMap = new JSONObject(FileUtils.readFileToString(pakcageNameMapFile,
+            StandardCharsets.UTF_8));
+      }
+
+      loadUnCountApps();
+    } catch (Exception e) {
+      Log.e("CountHelper", e.getMessage(), e);
     }
   }
 
-  private String readFile(Activity activity, String fileName) throws FileNotFoundException,
-      IOException {
-    FileInputStream inputStream = null;
-    inputStream = activity.openFileInput(fileName);
-    BufferedInputStream stream = new BufferedInputStream(inputStream, 128);
-    byte[] b = new byte[128];
-    int flag = stream.read(b);
-    StringBuilder sb = new StringBuilder();
-    while (flag != -1) {
-      sb.append(new String(b, 0, flag));
-      flag = stream.read(b);
+  private void loadUnCountApps() throws Exception {
+    File file = new File(cacheDir, FILE_UNCOUNT);
+    String uncount = FileUtils.readFileToString(file, StandardCharsets.UTF_8);
+    uncountApps = StringUtils.isBlank(uncount) ? new ArrayList<>() : Arrays.asList(uncount
+        .split("\n"));
+  }
+
+  private void recoverOldData() throws IOException {
+    for (String s : activity.fileList()) {
+      FileUtils.copyFile(activity.getFileStreamPath(s), new File(cacheDir, s));
     }
-    safeClose(stream);
-    return sb.toString();
+  }
+
+  private FileOutputStream getFileOutStream(String name) throws FileNotFoundException {
+    File file = new File(cacheDir, name);
+    return new FileOutputStream(file);
+  }
+
+  private FileInputStream getFileInStream(String name) throws FileNotFoundException {
+    File file = new File(cacheDir, name);
+    return new FileInputStream(file);
   }
 
   public void changeCountState(String packageName, Activity activity, boolean enableCount) {
     try {
-      if (isUnCount(activity, packageName) != enableCount) {
+      if (isUnCount(packageName) != enableCount) {
         return;
       }
-      try {
-        String content = readFile(activity, unCountFileName);
-        StringBuilder sb = new StringBuilder(content);
-        if (content.isEmpty()) {
-          if (enableCount) {
+      StringBuilder sb = new StringBuilder(StringUtils.join(uncountApps, "\n"));
+      if (uncountApps.isEmpty()) {
+        if (enableCount) {
 
-          } else {
-            sb.append(packageName).append("\n");
+        } else {
+          sb.append(packageName).append("\n");
+        }
+      } else {
+        if (enableCount) {
+          List<String> notCountApps = new ArrayList<>(Arrays.asList(sb.toString().split("\n")));
+          notCountApps.remove(packageName);
+          sb.setLength(0);
+          for (String notCountApp : notCountApps) {
+            sb.append(notCountApp).append("\n");
           }
         } else {
-          if (enableCount) {
-            List<String> notCountApps = new ArrayList<>();
-            notCountApps.addAll(Arrays.asList(sb.toString().split("\n")));
-            notCountApps.remove(packageName);
-            sb.setLength(0);
-            for (String notCountApp : notCountApps) {
-              sb.append(notCountApp).append("\n");
-            }
-          } else {
-            sb.append(packageName).append("\n");
-          }
+          sb.append(packageName).append("\n");
         }
-
-        FileOutputStream outputStream = activity.openFileOutput(unCountFileName,
-            Context.MODE_PRIVATE);
-        outputStream.write(sb.toString().getBytes());
-      } catch (FileNotFoundException e) {
-
-      } catch (IOException e) {
-
       }
+      File file = new File(cacheDir, FILE_UNCOUNT);
+      FileUtils.write(file, sb.toString(), StandardCharsets.UTF_8);
     } catch (Exception e) {
 
     }
   }
 
-  public boolean isUnCount(Activity activity, String appPackageName) {
+  public boolean isUnCount(String appPackageName) {
     try {
-      String stringBuilder = readFile(activity, unCountFileName);
-      return !stringBuilder.isEmpty()
-          && Arrays.asList(stringBuilder.split("\n")).contains(appPackageName);
+      return uncountApps.contains(appPackageName);
     } catch (Exception e) {
-      System.err.println(e);
+      Log.e("isUnCount", e.getMessage());
       return false;
     }
   }
 
-  public int getCount(Activity activity, String appPackageName) {
+  public int getCount(String appPackageName) {
     FileInputStream inputStream = null;
     try {
       Properties properties = new Properties();
-      inputStream = activity.openFileInput(countFileName);
+      inputStream = getFileInStream(FILE_COUNT);
       properties.load(inputStream);
       String property = properties.getProperty(appPackageName);
-      if (isUnCount(activity, appPackageName)) {
+      if (isUnCount(appPackageName)) {
         return -1;
       }
       if (property == null) {
@@ -163,7 +183,7 @@ public class CountHelper {
     FileInputStream inputStream = null;
     try {
       Properties properties = new Properties();
-      inputStream = activity.openFileInput(countFileName);
+      inputStream = getFileInStream(FILE_COUNT);
       properties.load(inputStream);
       List<LocalApp> apps = new ArrayList<>();
       for (Object key : properties.keySet()) {
@@ -193,7 +213,7 @@ public class CountHelper {
         try {
           Properties properties = new Properties();
           try {
-            inputStream = activity.openFileInput(countFileName);
+            inputStream = getFileInStream(FILE_COUNT);
             properties.load(inputStream);
           } catch (FileNotFoundException e) {
 
@@ -205,7 +225,7 @@ public class CountHelper {
             }
           }
           properties.setProperty(packageName, newValue + "");
-          outStream = activity.openFileOutput(countFileName, Context.MODE_PRIVATE);
+          outStream = getFileOutStream(FILE_COUNT);
           properties.store(outStream, "");
           outStream.flush();
           outStream.close();
@@ -221,4 +241,12 @@ public class CountHelper {
 
   }
 
+  public void savePackageNameMap() {
+    try {
+      FileUtils.writeStringToFile(new File(cacheDir, File_APP_NAME),
+          cachedPackageNameMap.toString(), StandardCharsets.UTF_8);
+    } catch (Exception e) {
+
+    }
+  }
 }

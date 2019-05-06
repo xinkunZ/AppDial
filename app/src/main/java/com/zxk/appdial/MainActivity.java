@@ -1,9 +1,11 @@
 package com.zxk.appdial;
 
+import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import android.Manifest;
 import android.app.Activity;
 import android.content.Intent;
 import android.content.pm.PackageInfo;
@@ -20,6 +22,8 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.provider.Settings;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
 import android.view.ContextMenu;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -55,13 +59,25 @@ public class MainActivity extends Activity implements ThreadHelper.ThreadHeplerU
 
   private FirebaseAnalytics firebaseAnalytics;
   private ShortcutManager shortcutManager = null;
+  public static final int coutPerThread = 40;
 
   @Override
   protected void onCreate(Bundle savedInstanceState) {
+    long start = System.currentTimeMillis();
+    System.out.println("启动开始");
     super.onCreate(savedInstanceState);
+    boolean hasPermission = (ContextCompat.checkSelfPermission(this,
+        Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED);
+    if (!hasPermission) {
+      ActivityCompat.requestPermissions(this, new String[] {
+        Manifest.permission.WRITE_EXTERNAL_STORAGE }, 1);
+    }
+
     setContentView(R.layout.activity_main);
     createEventHandlers();
     initAppList(false);
+    System.out.println(MessageFormat.format("----------------{0} 毫秒，每组排序{1}个",
+        "启动结束: " + (System.currentTimeMillis() - start), coutPerThread));
   }
 
   private void createEventHandlers() {
@@ -73,8 +89,8 @@ public class MainActivity extends Activity implements ThreadHelper.ThreadHeplerU
     firebaseAnalytics = FirebaseAnalytics.getInstance(this);
     apppsListView = findViewById(R.id.appList);
     numberTextView = findViewById(R.id.numberTextView);
-    appHelper = new AppHelper(getPackageManager(), this);
     countHelper = new CountHelper(this);
+    appHelper = new AppHelper(getPackageManager(), countHelper);
     listViewAdapter = new ListViewAdapter();
     fuckOPPO();
     apppsListView.setAdapter(listViewAdapter);
@@ -330,7 +346,7 @@ public class MainActivity extends Activity implements ThreadHelper.ThreadHeplerU
         lastApps = new ArrayList<>();
         lastApps.addAll(appInfos);
       }
-      new ThreadHelper<>(lastApps, this).exe();
+      new ThreadHelper<>(lastApps, this, coutPerThread).exe();
     }
   }
 
@@ -341,7 +357,7 @@ public class MainActivity extends Activity implements ThreadHelper.ThreadHeplerU
       PinyinSearchUnit unit = new PinyinSearchUnit();
       unit.setBaseData(localApp.getAppName());
       PinyinUtil.parse(unit);
-      if (T9Util.match(unit, searchText.toString())) {
+      if (T9Util.match(unit, searchText.toString()) && localApp.isInCount()) {
         newList.add(localApp);
       }
     }

@@ -2,19 +2,20 @@ package com.zxk.appdial.utils;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.List;
+import java.util.concurrent.ConcurrentHashMap;
 
 import net.sourceforge.pinyin4j.PinyinHelper;
 import net.sourceforge.pinyin4j.format.HanyuPinyinCaseType;
 import net.sourceforge.pinyin4j.format.HanyuPinyinOutputFormat;
 import net.sourceforge.pinyin4j.format.HanyuPinyinToneType;
-import android.app.Activity;
-import android.content.Intent;
+import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
+import android.graphics.drawable.Drawable;
 import android.util.Log;
 
+import com.zxk.appdial.MainActivity;
 import com.zxk.appdial.model.LocalApp;
 
 /**
@@ -24,16 +25,14 @@ import com.zxk.appdial.model.LocalApp;
  */
 public class AppHelper implements ThreadHelper.ThreadHeplerUser<PackageInfo> {
 
-  private volatile List<LocalApp> apps = null;
+  private ConcurrentHashMap<LocalApp, Object> apps = null;
 
   private PackageManager packageManager;
   private CountHelper countHelper;
-  private Activity mainActivity;
 
-  public AppHelper(PackageManager packageManager, Activity mainActivity) {
+  public AppHelper(PackageManager packageManager, CountHelper countHelper) {
     this.packageManager = packageManager;
-    this.countHelper = new CountHelper(mainActivity);
-    this.mainActivity = mainActivity;
+    this.countHelper = countHelper;
   }
 
   public List<LocalApp> scanLocalInstallAppList(boolean reload) {
@@ -41,52 +40,57 @@ public class AppHelper implements ThreadHelper.ThreadHeplerUser<PackageInfo> {
       apps = null;
     }
     if (apps != null) {
-      return apps;
+      return new ArrayList<>(apps.keySet());
     }
-    apps = new ArrayList<>();
+    apps = new ConcurrentHashMap<>();
     try {
       List<PackageInfo> packageInfos = packageManager.getInstalledPackages(0);
-      new ThreadHelper<>(packageInfos, this, 16).exe();// 多开点线程
+      new ThreadHelper<>(packageInfos, this, MainActivity.coutPerThread).exe();
     } catch (RuntimeException e) {
       e.printStackTrace();
     }
-    Iterator<LocalApp> iterator = apps.iterator();
-    while (iterator.hasNext()) {
-      if (iterator.next() == null) {
-        iterator.remove();
-      }
-    }
-    Collections.sort(apps);
-    Collections.reverse(apps);
-    return apps;
+    List<LocalApp> result = new ArrayList<>(apps.keySet());
+    Collections.sort(result);
+    Collections.reverse(result);
+    return result;
   }
 
   @Override
   public void run(List<PackageInfo> list) {
-    Log.d(AppHelper.class.getName(), "遍历内容： " + list.toString());
+    // Log.d(AppHelper.class.getName(), "遍历内容： " + list.toString());
+
     for (int i = 0; i < list.size(); i++) {
       PackageInfo packageInfo = list.get(i);
-      // 过滤不能打开的app
-      Intent intent = packageManager.getLaunchIntentForPackage(packageInfo.packageName);
-      if (intent == null) {
+      if ((ApplicationInfo.FLAG_SYSTEM & packageInfo.applicationInfo.flags) != 0) {
         continue;
       }
       LocalApp myAppInfo = new LocalApp();
       myAppInfo.setPackageName(packageInfo.packageName);
-      myAppInfo.setAppName(packageInfo.applicationInfo.loadLabel(packageManager).toString());
+      myAppInfo.setAppName(packageInfo.packageName.replace(".", ""));
+      String name = countHelper.getCachedPackageNameMap().optString(packageInfo.packageName, null);
+      if (name == null) {
+        name = packageInfo.applicationInfo.loadLabel(packageManager).toString();
+        try {
+          countHelper.getCachedPackageNameMap().put(packageInfo.packageName, name);
+        } catch (Exception e) {
+        }
+      }
+      myAppInfo.setAppName(name);
       myAppInfo.setClassName(packageInfo.applicationInfo.className);
       myAppInfo.setPinyin(getPinyin(myAppInfo.getAppName(), myAppInfo.getPackageName()));
-      myAppInfo.setCount(countHelper.getCount(mainActivity, myAppInfo.getPackageName()));
-      myAppInfo.setInCount(!countHelper.isUnCount(mainActivity, myAppInfo.getPackageName()));
-      if (packageInfo.applicationInfo.loadIcon(packageManager) == null) {
+      myAppInfo.setCount(countHelper.getCount(myAppInfo.getPackageName()));
+      myAppInfo.setInCount(!countHelper.isUnCount(myAppInfo.getPackageName()));
+      Drawable appIcon = packageInfo.applicationInfo.loadIcon(packageManager);
+      if (appIcon == null) {
         continue;
       }
-      myAppInfo.setIcon(packageInfo.applicationInfo.loadIcon(packageManager));
-      apps.add(myAppInfo);
+      myAppInfo.setIcon(appIcon);
+      apps.put(myAppInfo, new Object());
     }
+    Log.d(AppHelper.class.getName(), Thread.currentThread().getName() + "结束");
   }
 
-  private String getPinyin(String appName, String defaultName) {
+  private static String getPinyin(String appName, String defaultName) {
     try {
       HanyuPinyinOutputFormat format = new HanyuPinyinOutputFormat();
       format.setCaseType(HanyuPinyinCaseType.LOWERCASE);
@@ -109,7 +113,7 @@ public class AppHelper implements ThreadHelper.ThreadHeplerUser<PackageInfo> {
 
   @Override
   public void afterRun() {
-
+    new Thread(() -> countHelper.savePackageNameMap()).start();
   }
 
 }

@@ -2,6 +2,8 @@ package com.zxk.appdial.model;
 
 import java.io.Serializable;
 
+import org.apache.commons.lang3.builder.EqualsBuilder;
+
 import android.graphics.drawable.Drawable;
 
 /**
@@ -30,15 +32,14 @@ public class LocalApp implements Serializable, Comparable<LocalApp> {
   public boolean equals(Object o) {
     if (this == o)
       return true;
+
     if (o == null || getClass() != o.getClass())
       return false;
 
     LocalApp localApp = (LocalApp) o;
 
-    if (appName != null ? !appName.equals(localApp.appName) : localApp.appName != null)
-      return false;
-    return packageName != null ? packageName.equals(localApp.packageName)
-        : localApp.packageName == null;
+    return new EqualsBuilder().append(appName, localApp.appName)
+        .append(packageName, localApp.packageName).isEquals();
   }
 
   @Override

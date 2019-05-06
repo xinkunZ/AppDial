@@ -6,15 +6,18 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Date;
 import java.util.List;
 import java.util.Properties;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.time.DateUtils;
 import org.json.JSONObject;
 
 import android.app.Activity;
@@ -32,20 +35,37 @@ public class CountHelper {
   // properties
   private String FILE_COUNT = "appCountCache";
 
-  // normal text
+  // text with \n
   private String FILE_UNCOUNT = "shyApps";
 
-  // properties
+  // json
   private String File_APP_NAME = "appname";
+
+  // text with \n
+  private String File_NO_MAINACTIVITY_APP = "noMainActivity";
 
   private Activity activity;
   private JSONObject cachedPackageNameMap = new JSONObject();
 
   private File cacheDir;
   private List<String> uncountApps = new ArrayList<>();
+  private List<String> noMainActivityApps = new ArrayList<>();
+  private List<OutputStream> cachedAppIcon = new ArrayList<>();
+
+  public File getCacheDir() {
+    return cacheDir;
+  }
+
+  public List<OutputStream> getCachedAppIcon() {
+    return cachedAppIcon;
+  }
 
   public JSONObject getCachedPackageNameMap() {
     return cachedPackageNameMap;
+  }
+
+  public List<String> getNoMainActivityApps() {
+    return noMainActivityApps;
   }
 
   public CountHelper(Activity activity) {
@@ -75,8 +95,24 @@ public class CountHelper {
       }
 
       loadUnCountApps();
+      loadNoMainActivityApps();
     } catch (Exception e) {
       Log.e("CountHelper", e.getMessage(), e);
+    }
+  }
+
+  private void loadNoMainActivityApps() throws IOException {
+    File file = new File(cacheDir, File_NO_MAINACTIVITY_APP);
+    if (!file.exists()) {
+      file.createNewFile();
+    }
+    boolean isSameDay = DateUtils.isSameDay(new Date(), new Date(file.lastModified()));
+    if (isSameDay) {
+      String noMainActivity = FileUtils.readFileToString(file, StandardCharsets.UTF_8);
+      noMainActivityApps = StringUtils.isBlank(noMainActivity) ? new ArrayList<>() : Arrays
+          .asList(noMainActivity.split("\n"));
+    } else {
+      noMainActivityApps = new ArrayList<>();
     }
   }
 
@@ -249,4 +285,14 @@ public class CountHelper {
 
     }
   }
+
+  public void saveNoMainActivityApps() {
+    try {
+      FileUtils.writeStringToFile(new File(cacheDir, File_NO_MAINACTIVITY_APP),
+          StringUtils.join(noMainActivityApps, "\n"), StandardCharsets.UTF_8);
+    } catch (Exception e) {
+
+    }
+  }
+
 }

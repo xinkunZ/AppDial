@@ -59,7 +59,7 @@ public class MainActivity extends Activity implements ThreadHelper.ThreadHeplerU
 
   private FirebaseAnalytics firebaseAnalytics;
   private ShortcutManager shortcutManager = null;
-  public static final int coutPerThread = 40;
+  public static final int coutPerThread = 50;
 
   @Override
   protected void onCreate(Bundle savedInstanceState) {

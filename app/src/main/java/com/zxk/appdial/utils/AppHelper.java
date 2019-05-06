@@ -1,5 +1,7 @@
 package com.zxk.appdial.utils;
 
+import java.io.File;
+import java.io.FileOutputStream;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -9,10 +11,13 @@ import net.sourceforge.pinyin4j.PinyinHelper;
 import net.sourceforge.pinyin4j.format.HanyuPinyinCaseType;
 import net.sourceforge.pinyin4j.format.HanyuPinyinOutputFormat;
 import net.sourceforge.pinyin4j.format.HanyuPinyinToneType;
-import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
+import android.graphics.Canvas;
+import android.graphics.Bitmap.CompressFormat;
 import android.graphics.drawable.Drawable;
+import android.support.annotation.NonNull;
 import android.util.Log;
 
 import com.zxk.appdial.MainActivity;
@@ -61,9 +66,17 @@ public class AppHelper implements ThreadHelper.ThreadHeplerUser<PackageInfo> {
 
     for (int i = 0; i < list.size(); i++) {
       PackageInfo packageInfo = list.get(i);
-      if ((ApplicationInfo.FLAG_SYSTEM & packageInfo.applicationInfo.flags) != 0) {
+      if (countHelper.getNoMainActivityApps().contains(packageInfo.packageName)) {
         continue;
       }
+      // else {
+      // Intent intent =
+      // packageManager.getLaunchIntentForPackage(packageInfo.packageName);
+      // if (intent == null) {
+      // countHelper.getNoMainActivityApps().add(packageInfo.packageName);
+      // continue;
+      // }
+      // }
       LocalApp myAppInfo = new LocalApp();
       myAppInfo.setPackageName(packageInfo.packageName);
       myAppInfo.setAppName(packageInfo.packageName.replace(".", ""));
@@ -80,14 +93,38 @@ public class AppHelper implements ThreadHelper.ThreadHeplerUser<PackageInfo> {
       myAppInfo.setPinyin(getPinyin(myAppInfo.getAppName(), myAppInfo.getPackageName()));
       myAppInfo.setCount(countHelper.getCount(myAppInfo.getPackageName()));
       myAppInfo.setInCount(!countHelper.isUnCount(myAppInfo.getPackageName()));
-      Drawable appIcon = packageInfo.applicationInfo.loadIcon(packageManager);
-      if (appIcon == null) {
-        continue;
+      int hashCode = myAppInfo.getPackageName().hashCode();
+      File iconcFile = new File(countHelper.getCacheDir(), "/icons/" + hashCode);
+      if (iconcFile.exists()) {
+        myAppInfo.setIcon(Drawable.createFromPath(iconcFile.getAbsolutePath()));
+      } else {
+        Drawable appIcon = packageInfo.applicationInfo.loadIcon(packageManager);
+        if (appIcon == null) {
+          continue;
+        }
+        myAppInfo.setIcon(appIcon);
+        try {
+          iconcFile.getParentFile().mkdirs();
+          iconcFile.createNewFile();
+          FileOutputStream outputStream = new FileOutputStream(iconcFile);
+          getBitmapFromDrawable(appIcon).compress(CompressFormat.PNG, 100, outputStream);
+          outputStream.close();
+        } catch (Exception e) {
+
+        }
       }
-      myAppInfo.setIcon(appIcon);
       apps.put(myAppInfo, new Object());
     }
     Log.d(AppHelper.class.getName(), Thread.currentThread().getName() + "结束");
+  }
+
+  private Bitmap getBitmapFromDrawable(@NonNull Drawable drawable) {
+    final Bitmap bmp = Bitmap.createBitmap(drawable.getIntrinsicWidth(),
+        drawable.getIntrinsicHeight(), Bitmap.Config.ARGB_8888);
+    final Canvas canvas = new Canvas(bmp);
+    drawable.setBounds(0, 0, canvas.getWidth(), canvas.getHeight());
+    drawable.draw(canvas);
+    return bmp;
   }
 
   private static String getPinyin(String appName, String defaultName) {
@@ -113,7 +150,10 @@ public class AppHelper implements ThreadHelper.ThreadHeplerUser<PackageInfo> {
 
   @Override
   public void afterRun() {
-    new Thread(() -> countHelper.savePackageNameMap()).start();
+    new Thread(() -> {
+      countHelper.savePackageNameMap();
+      countHelper.saveNoMainActivityApps();
+    }).start();
   }
 
 }

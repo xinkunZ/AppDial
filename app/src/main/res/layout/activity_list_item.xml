@@ -10,7 +10,7 @@
     android:id="@+id/appIcon"
     android:layout_weight="1"
     android:layout_height="50dp"
-    android:scaleType="fitCenter"
+    android:contentDescription="TODO" android:scaleType="fitCenter"
     android:layout_width="50dp"
     android:layout_marginStart="15dp" />
 

@@ -11,13 +11,11 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.Date;
 import java.util.List;
 import java.util.Properties;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.time.DateUtils;
 import org.json.JSONObject;
 
 import android.app.Activity;
@@ -105,14 +103,11 @@ public class CountHelper {
     File file = new File(cacheDir, File_NO_MAINACTIVITY_APP);
     if (!file.exists()) {
       file.createNewFile();
-    }
-    boolean isSameDay = DateUtils.isSameDay(new Date(), new Date(file.lastModified()));
-    if (isSameDay) {
-      String noMainActivity = FileUtils.readFileToString(file, StandardCharsets.UTF_8);
-      noMainActivityApps = StringUtils.isBlank(noMainActivity) ? new ArrayList<>() : Arrays
-          .asList(noMainActivity.split("\n"));
-    } else {
       noMainActivityApps = new ArrayList<>();
+    } else {
+      String noMainActivity = FileUtils.readFileToString(file, StandardCharsets.UTF_8);
+      noMainActivityApps = StringUtils.isBlank(noMainActivity) ? new ArrayList<>()
+          : new ArrayList<>(Arrays.asList(noMainActivity.split("\n")));
     }
   }
 

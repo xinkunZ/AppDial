@@ -11,6 +11,7 @@ import net.sourceforge.pinyin4j.PinyinHelper;
 import net.sourceforge.pinyin4j.format.HanyuPinyinCaseType;
 import net.sourceforge.pinyin4j.format.HanyuPinyinOutputFormat;
 import net.sourceforge.pinyin4j.format.HanyuPinyinToneType;
+import android.content.Intent;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
@@ -68,15 +69,13 @@ public class AppHelper implements ThreadHelper.ThreadHeplerUser<PackageInfo> {
       PackageInfo packageInfo = list.get(i);
       if (countHelper.getNoMainActivityApps().contains(packageInfo.packageName)) {
         continue;
+      } else {
+        Intent intent = packageManager.getLaunchIntentForPackage(packageInfo.packageName);
+        if (intent == null) {
+          countHelper.getNoMainActivityApps().add(packageInfo.packageName);
+          continue;
+        }
       }
-      // else {
-      // Intent intent =
-      // packageManager.getLaunchIntentForPackage(packageInfo.packageName);
-      // if (intent == null) {
-      // countHelper.getNoMainActivityApps().add(packageInfo.packageName);
-      // continue;
-      // }
-      // }
       LocalApp myAppInfo = new LocalApp();
       myAppInfo.setPackageName(packageInfo.packageName);
       myAppInfo.setAppName(packageInfo.packageName.replace(".", ""));

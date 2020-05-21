@@ -1,4 +1,5 @@
-[![Actions Status](https://github.com/xinkunZ/AppDial/workflows/android/badge.svg)](https://github.com/xinkunZ/AppDial/actions)
+[![Actions Status](https://github.com/xinkunZ/AppDial/workflows/Android%20CI/badge.svg)](https://github.com/xinkunZ/AppDial/actions)
+
 # AppDial
 * Android上面好像没几个用的顺心的app搜索工具，唯一好用的meemo也不兼容Android 8.0
 * 从这种工具类app入手，学习一下Android app开发

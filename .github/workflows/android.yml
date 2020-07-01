@@ -19,7 +19,6 @@ jobs:
         java-version: 1.8
     - name: set up sdk home
       run: sudo mkdir -p /JAVA/jdks/android
-    - name: chmod for gradle
-      run: chmod +x ./gradlew
-    - name: Build with Gradle
-      run: sudo ./gradlew build
+    - name: "Build Android project"
+      uses: vgaidarji/android-github-actions-build@v1.0.1
+
